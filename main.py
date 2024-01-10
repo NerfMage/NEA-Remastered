@@ -1,5 +1,6 @@
-import settings
-from system import System
+import system
 
-game = System()
+game = system.System()
+
+
 game.run()

@@ -1,21 +1,12 @@
 import pygame
-
 import settings
 
-class Spritesheet:
-    def __init__(self, spritesheet):
-        """
-        Class to help animate spritesheets
-        :param sheet: The png image
-        """
-        self.spritesheet = spritesheet
 
 class System:
     def __init__(self):
         """
         Class to run teh game itself and manage all the objects
         """
-        pygame.init()  # Initiates pygame module
         self.win = pygame.display.set_mode(settings.INITIAL_SIZE, pygame.FULLSCREEN)
         # Creates a surface that sprites can be drawn to
         self.running = True

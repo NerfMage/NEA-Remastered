@@ -2,7 +2,7 @@ import pygame
 
 
 class Creature:
-    def __init__(self, name, health, speed):
+    def __init__(self, name, health, speed, x, y):
         """
         A superclass for all the enemies and the player
         :param name: the creature's name
@@ -12,3 +12,4 @@ class Creature:
         self.name = name
         self.health = health
         self.speed = speed
+        self.x, self.y = x, y
