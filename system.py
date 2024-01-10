@@ -1,5 +1,6 @@
 import pygame
 import settings
+import os
 
 
 class Spritesheet:
@@ -34,14 +35,14 @@ class Spritesheet:
 class System:
     def __init__(self):
         """
-        Class to run teh game itself and manage all the objects
+        Class to run the game itself and manage all the objects
         """
         self.win = pygame.display.set_mode(settings.INITIAL_SIZE, pygame.FULLSCREEN)
         # Creates a surface that sprites can be drawn to
         self.running = True
         # Loads the background image sprite and scales it to fit screen resolution
         self.bg = pygame.transform.scale(pygame.image.load(
-            settings.ENVIRONMENT_SPRITES['Floor']), settings.INITIAL_SIZE)
+            os.path.join('Sprites', 'Environment', 'Floor.png')), settings.INITIAL_SIZE)
 
     def run(self):
         while self.running:
