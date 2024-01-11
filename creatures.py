@@ -59,7 +59,9 @@ class Slime(Enemy):
         # Dict containing all the spritesheets for the Slime's animations
         self.spritesheets = {
             'move_right': Spritesheet(pygame.image.load(os.path.join(
-                'Sprites', 'Enemies', 'Slime', colour, 'Move_Right.png')), 128, 128, 7, 1)
+                'Sprites', 'Enemies', 'Slime', colour, 'Move_Right.png')), 128, 128, 7, 1),
+            'move_left': Spritesheet(pygame.image.load(os.path.join(
+                'Sprites', 'Enemies', 'Slime', colour, 'Move_Left.png')), 128, 128, 7, 1)
         }
 
         # Stats

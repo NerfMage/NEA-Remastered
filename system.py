@@ -9,12 +9,15 @@ class System:
         """
         Class to run the game itself and manage all the objects
         """
-        self.win = pygame.display.set_mode(settings.INITIAL_SIZE, pygame.FULLSCREEN)
         # Creates a surface that sprites can be drawn to
+        self.win = pygame.display.set_mode(settings.INITIAL_SIZE, pygame.FULLSCREEN)
         self.running = True
+        self.clock = pygame.time.Clock()
         # Loads the background image sprite and scales it to fit screen resolution
         self.bg = pygame.transform.scale(pygame.image.load(
             os.path.join('Sprites', 'Environment', 'Floor.png')), settings.INITIAL_SIZE)
+
+        # SLIME TEST
         self.current_room = Room(1)
         self.current_room.add_enemy()
 
@@ -37,3 +40,4 @@ class System:
                         pygame.quit()
                         self.running = False
 
+            self.clock.tick_busy_loop(20)
