@@ -1,35 +1,7 @@
 import pygame
 import settings
 import os
-
-
-class Spritesheet:
-    def __init__(self, sheet, width, height, length, scale):
-        """
-        A class to animate spritesheets
-        :param sheet: The image file of the sheet
-        :param width: The width of each frame
-        :param height: The height of each frame
-        :param length: The number of frame on the sheet
-        :param scale: The scale factor for the sprite to be enlarged by
-        """
-        self.sheet = sheet
-        self.width = width
-        self.height = height
-        self.length = length
-        self.scale = scale
-        self.frame = 0
-
-    def get_image(self):
-        image = pygame.Surface((self.width, self.height), pygame.SRCALPHA).convert_alpha()
-        image.blit(self.sheet, (0, 0), (128 * self.frame, 0, self.width, self.height))
-        image = pygame.transform.scale_by(image, self.scale)
-
-        self.frame += 1
-        if self.frame == self.length:
-            self.frame = 0
-
-        return image
+from rooms import Room
 
 
 class System:
@@ -43,11 +15,14 @@ class System:
         # Loads the background image sprite and scales it to fit screen resolution
         self.bg = pygame.transform.scale(pygame.image.load(
             os.path.join('Sprites', 'Environment', 'Floor.png')), settings.INITIAL_SIZE)
+        self.current_room = Room(1)
+        self.current_room.add_enemy()
 
     def run(self):
         while self.running:
 
             self.win.blit(self.bg, (0, 0))
+            self.current_room.draw_enemies(self.win)
             pygame.display.update()
 
             for event in pygame.event.get():
@@ -61,3 +36,4 @@ class System:
                         # Quits the program if escape key is pressed
                         pygame.quit()
                         self.running = False
+
