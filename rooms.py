@@ -11,8 +11,9 @@ class Room:
         self.obstacles = []
         self.enemies = []
 
-    def add_enemy(self):
-        self.enemies.append(creatures.Slime('Green', 100, 100, 1))
+    def add_enemy(self, name, x, y, difficulty):
+
+        self.enemies.append(creatures.Factory(name, x, y, difficulty))
 
     def draw_enemies(self, win):
         for enemy in self.enemies:

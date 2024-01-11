@@ -1,5 +1,6 @@
 import pygame
 import os
+import random
 
 
 class Spritesheet:
@@ -41,6 +42,15 @@ class Creature:
         self.y = y
 
 
+def Factory(enemy, *args):
+
+    localisers = {
+        "Slime": Slime
+    }
+
+    return localisers[enemy](*args)
+
+
 class Enemy(Creature):
     def __init__(self, x, y, difficulty):
         """
@@ -53,22 +63,24 @@ class Enemy(Creature):
 
 
 class Slime(Enemy):
-    def __init__(self, colour, x, y, difficulty):
+    def __init__(self, x, y, difficulty):
         super().__init__(x, y, difficulty)
+
+        self.colour = random.choice(['Red', 'Green', 'Blue'])
 
         # Dict containing all the spritesheets for the Slime's animations
         self.spritesheets = {
             'move_right': Spritesheet(pygame.image.load(os.path.join(
-                'Sprites', 'Enemies', 'Slime', colour, 'Move_Right.png')), 128, 128, 7, 1),
+                'Sprites', 'Enemies', 'Slime', self.colour, 'Move_Right.png')), 128, 128, 7, 1),
             'move_left': Spritesheet(pygame.image.load(os.path.join(
-                'Sprites', 'Enemies', 'Slime', colour, 'Move_Left.png')), 128, 128, 7, 1)
+                'Sprites', 'Enemies', 'Slime', self.colour, 'Move_Left.png')), 128, 128, 7, 1)
         }
 
         # Stats
         self.health = 10
         self.damage = 10
 
-        self.state = 'move_right'
+        self.state = 'move_left'
 
     def return_sprite(self):
         return self.spritesheets[self.state].get_image()
