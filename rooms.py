@@ -12,11 +12,11 @@ class Room:
         self.enemies = []
 
     def add_enemy(self, name, x, y, difficulty):
-
         self.enemies.append(creatures.Factory(name, x, y, difficulty))
 
-    def draw_enemies(self, win):
+    def draw_enemies(self, win, x, y):
         for enemy in self.enemies:
+            enemy.move(x, y)
             sprite = enemy.return_sprite()
             coords = enemy.return_coords()
             win.blit(sprite, coords)

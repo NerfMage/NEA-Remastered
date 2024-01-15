@@ -36,13 +36,19 @@ class Creature:
     def __init__(self, x, y):
         """
         A superclass for all the enemies and the player
-        :param x,y : The coordinates of teh creature
+        :param x,y : The coordinates of the creature
         """
         self.x = x
         self.y = y
 
 
 def Factory(enemy, *args):
+    """
+    A function to return the appropriate subcalss based on an input
+    :param enemy: the subclass name
+    :param args: the subcalss arguments
+    :return: the subclass object
+    """
 
     localisers = {
         "Slime": Slime
@@ -60,6 +66,26 @@ class Enemy(Creature):
         super().__init__(x, y)
         self.difficulty = difficulty
         self.droppable = []
+        self.speed = None
+        self.state = None
+
+    def move(self, x, y):
+        dist_x = x - self.x
+        dist_y = y - self.y
+        tot_dist = ((dist_x**2) + (dist_y**2))**0.5
+
+        if tot_dist < 5:
+            pass
+        else:
+            scale_factor = self.speed/tot_dist
+
+            self.x += int(dist_x * scale_factor)
+            self.y += int(dist_y * scale_factor)
+
+        if dist_x > 0:
+            self.state = 'move_right'
+        else:
+            self.state = 'move_left'
 
 
 class Slime(Enemy):
@@ -67,6 +93,7 @@ class Slime(Enemy):
         super().__init__(x, y, difficulty)
 
         self.colour = random.choice(['Red', 'Green', 'Blue'])
+        self.speed = 10
 
         # Dict containing all the spritesheets for the Slime's animations
         self.spritesheets = {

@@ -25,7 +25,7 @@ class System:
         while self.running:
 
             self.win.blit(self.bg, (0, 0))
-            self.current_room.draw_enemies(self.win)
+            self.current_room.draw_enemies(self.win, pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1])
             pygame.display.update()
 
             for event in pygame.event.get():
