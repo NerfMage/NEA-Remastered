@@ -20,12 +20,14 @@ class System:
         # SLIME TEST
         self.current_room = Room(1)
         self.current_room.add_enemy('Slime', 100, 100, 1)
+        self.current_room.add_obstacle('Barrel', 500, 500)
 
     def run(self):
         while self.running:
 
             self.win.blit(self.bg, (0, 0))
             self.current_room.draw_enemies(self.win, pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1])
+            self.current_room.draw_obstacles(self.win)
             pygame.display.update()
 
             for event in pygame.event.get():

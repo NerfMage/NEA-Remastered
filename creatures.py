@@ -3,6 +3,21 @@ import os
 import random
 
 
+def Factory(enemy, *args):
+    """
+    A function to return the appropriate subcalss based on an input
+    :param enemy: the subclass name
+    :param args: the subcalss arguments
+    :return: the subclass object
+    """
+
+    localisers = {
+        "Slime": Slime
+    }
+
+    return localisers[enemy](*args)
+
+
 class Spritesheet:
     def __init__(self, sheet, width, height, length, scale):
         """
@@ -40,21 +55,6 @@ class Creature:
         """
         self.x = x
         self.y = y
-
-
-def Factory(enemy, *args):
-    """
-    A function to return the appropriate subcalss based on an input
-    :param enemy: the subclass name
-    :param args: the subcalss arguments
-    :return: the subclass object
-    """
-
-    localisers = {
-        "Slime": Slime
-    }
-
-    return localisers[enemy](*args)
 
 
 class Enemy(Creature):
