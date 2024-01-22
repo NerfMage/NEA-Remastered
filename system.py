@@ -20,7 +20,7 @@ class System:
         # SLIME TEST
         self.current_room = Room(1)
         self.current_room.add_enemy('Slime', 100, 100, 1)
-        self.current_room.add_obstacle('Barrel', 500, 500)
+        self.current_room.add_obstacles()
 
     def run(self):
         while self.running:

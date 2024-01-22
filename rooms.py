@@ -1,5 +1,6 @@
 import creatures
 import obstacles
+import settings
 
 
 class Room:
@@ -22,8 +23,9 @@ class Room:
             coords = enemy.return_coords()
             win.blit(sprite, coords)
 
-    def add_obstacle(self, name, x, y):
-        self.obstacles.append(obstacles.Obstacle(name, x, y))
+    def add_obstacles(self):
+        for coords in settings.MAP:
+            self.obstacles.append(obstacles.Obstacle('Barrel', coords[0], coords[1]))
 
     def draw_obstacles(self, win):
         for obstacle in self.obstacles:
