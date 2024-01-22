@@ -1,5 +1,4 @@
 import pygame
-import settings
 import os
 from rooms import Room
 
@@ -10,12 +9,12 @@ class System:
         Class to run the game itself and manage all the objects
         """
         # Creates a surface that sprites can be drawn to
-        self.win = pygame.display.set_mode(settings.INITIAL_SIZE, pygame.FULLSCREEN)
+        self.win = pygame.display.set_mode([1680, 1050], pygame.FULLSCREEN)
         self.running = True
         self.clock = pygame.time.Clock()
         # Loads the background image sprite and scales it to fit screen resolution
         self.bg = pygame.transform.scale(pygame.image.load(
-            os.path.join('Sprites', 'Environment', 'Floor.png')), settings.INITIAL_SIZE)
+            os.path.join('Sprites', 'Environment', 'Floor.png')), [1680, 1050])
 
         # SLIME TEST
         self.current_room = Room(1)

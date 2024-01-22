@@ -44,7 +44,7 @@ class Spritesheet:
         if self.frame == self.length:
             self.frame = 0
 
-        return image
+        return image, self.frame
 
 
 class Creature:
@@ -110,7 +110,7 @@ class Slime(Enemy):
         self.state = 'move_left'
 
     def return_sprite(self):
-        return self.spritesheets[self.state].get_image()
+        return self.spritesheets[self.state].get_image()[0]
 
     def return_coords(self):
         return self.x, self.y
