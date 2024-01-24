@@ -4,7 +4,8 @@ import noise
 import random
 
 shape1 = (40, 25)
-MAP = []
+OBSTACLE_MAP = []
+ENEMY_MAP = []
 array = np.zeros(shape1)
 scale = 5
 seed = random.randint(0, 255)
@@ -23,5 +24,6 @@ for i in range(shape1[0]):
 for i in range(shape1[0]):
     for j in range(shape1[1]):
         if array[i][j] < -0.25:
-            array[i][j] = 0
-            MAP.append([i*40, j*40])
+            OBSTACLE_MAP.append([i*40, j*40])
+        elif array[i][j] > 0.35:
+            ENEMY_MAP.append([i*40, j*40])

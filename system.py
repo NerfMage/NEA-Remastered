@@ -18,8 +18,7 @@ class System:
 
         # SLIME TEST
         self.current_room = Room(1)
-        self.current_room.add_enemy('Slime', 100, 100, 1)
-        self.current_room.add_obstacles()
+        self.current_room.generate()
 
     def run(self):
         while self.running:

@@ -35,16 +35,17 @@ class Spritesheet:
         self.scale = scale
         self.frame = 0
 
-    def get_image(self):
-        image = pygame.Surface((self.width, self.height), pygame.SRCALPHA).convert_alpha()
-        image.blit(self.sheet, (0, 0), (128 * self.frame, 0, self.width, self.height))
-        image = pygame.transform.scale_by(image, self.scale)
-
+    def update(self):
         self.frame += 1
         if self.frame == self.length:
             self.frame = 0
 
-        return image, self.frame
+    def get_image(self):
+        image = pygame.Surface((self.width, self.height), pygame.SRCALPHA).convert_alpha()
+        image.blit(self.sheet, (0, 0), (self.width * self.frame, 0, self.width, self.height))
+        image = pygame.transform.scale_by(image, self.scale)
+
+        return image
 
 
 class Creature:
@@ -93,7 +94,7 @@ class Slime(Enemy):
         super().__init__(x, y, difficulty)
 
         self.colour = random.choice(['Red', 'Green', 'Blue'])
-        self.speed = 10
+        self.speed = 5
 
         # Dict containing all the spritesheets for the Slime's animations
         self.spritesheets = {
@@ -110,7 +111,8 @@ class Slime(Enemy):
         self.state = 'move_left'
 
     def return_sprite(self):
-        return self.spritesheets[self.state].get_image()[0]
+        self.spritesheets[self.state].update()
+        return self.spritesheets[self.state].get_image()
 
     def return_coords(self):
         return self.x, self.y
