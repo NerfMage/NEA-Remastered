@@ -25,6 +25,10 @@ class Room:
             coords = enemy.return_coords()
             win.blit(sprite, coords)
 
+    def draw_enemy_hitboxes(self):
+        for enemy in self.enemies:
+            enemy.draw_hitbox()
+
     def add_obstacle(self, name, x, y):
         self.obstacles.append(obstacles.Obstacle(name, x, y))
 
@@ -51,3 +55,10 @@ class Room:
             sprite = obstacle.return_sprite()
             coords = obstacle.return_coords()
             win.blit(sprite, coords)
+
+    def draw_obstacle_hitboxes(self):
+        for trap in self.traps:
+            trap.draw_hitbox()
+
+        for obstacle in self.obstacles:
+            obstacle.draw_hitbox()

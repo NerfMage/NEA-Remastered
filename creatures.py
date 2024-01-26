@@ -94,6 +94,7 @@ class Slime(Enemy):
         super().__init__(x, y, difficulty)
 
         self.colour = random.choice(['Red', 'Green', 'Blue'])
+        self.hitbox = (self.x + 40, self.y + 96, 56, 54)
         self.speed = 5
 
         # Dict containing all the spritesheets for the Slime's animations
@@ -112,7 +113,12 @@ class Slime(Enemy):
 
     def return_sprite(self):
         self.spritesheets[self.state].update()
+        self.hitbox = (self.x + 40, self.y + 96, 56, 32)
         return self.spritesheets[self.state].get_image()
 
     def return_coords(self):
         return self.x, self.y
+
+    def draw_hitbox(self):
+        win = pygame.display.get_surface()
+        return pygame.draw.rect(win, (255, 0, 0), self.hitbox)
