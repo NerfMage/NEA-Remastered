@@ -1,6 +1,7 @@
 import pygame
 import os
 import random
+import rooms
 
 
 def Factory(enemy, *args):
@@ -54,12 +55,10 @@ class Creature:
         A superclass for all the enemies and the player
         :param x,y : The coordinates of the creature
         """
-        self.x = x
-        self.y = y
 
 
 class Enemy(Creature):
-    def __init__(self, x, y, difficulty):
+    def __init__(self, x, y, difficulty, speed, health):
         """
         A subclass for all enemies to inherit from
         :param difficulty: An integer to scale the health and damage of the enemy as the run progresses
@@ -67,35 +66,37 @@ class Enemy(Creature):
         super().__init__(x, y)
         self.difficulty = difficulty
         self.droppable = []
-        self.speed = None
+        self.speed = speed
+        self.health = health
         self.state = None
+        self.hitbox = pygame.Rect
+        self.tile_index = [0][0]
 
     def move(self, x, y):
-        dist_x = x - self.x
-        dist_y = y - self.y
-        tot_dist = ((dist_x**2) + (dist_y**2))**0.5
+        dist_x = x - self.hitbox.centerx
+        dist_y = y - self.hitbox.centery
+        tot_dist = ((dist_x ** 2) + (dist_y ** 2)) ** 0.5
 
         if tot_dist < 5:
             pass
         else:
-            scale_factor = self.speed/tot_dist
+            scale_factor = self.speed / tot_dist
 
-            self.x += int(dist_x * scale_factor)
-            self.y += int(dist_y * scale_factor)
+            self.hitbox.x += int(dist_x * scale_factor)
+            self.hitbox.y += int(dist_y * scale_factor)
 
-        if dist_x > 0:
-            self.state = 'move_right'
-        else:
-            self.state = 'move_left'
+    def get_tile(self):
+        for column in rooms.TILES:
+            for tile in column:
+                if tile.return_hitbox().collidepoint(self.hitbox.centerx, self.hitbox.centery):
+                    return tile
 
 
 class Slime(Enemy):
     def __init__(self, x, y, difficulty):
-        super().__init__(x, y, difficulty)
+        super().__init__(x, y, difficulty, 5, 10)
 
         self.colour = random.choice(['Red', 'Green', 'Blue'])
-        self.hitbox = (self.x + 40, self.y + 96, 56, 54)
-        self.speed = 5
 
         # Dict containing all the spritesheets for the Slime's animations
         self.spritesheets = {
@@ -106,19 +107,19 @@ class Slime(Enemy):
         }
 
         # Stats
-        self.health = 10
         self.damage = 10
 
         self.state = 'move_left'
+        self.sprite = self.return_sprite()
+        self.hitbox = pygame.Rect(x, y, 50, 30)
+        self.hitbox.center = [x, y]
 
     def return_sprite(self):
         self.spritesheets[self.state].update()
-        self.hitbox = (self.x + 40, self.y + 96, 56, 32)
         return self.spritesheets[self.state].get_image()
 
     def return_coords(self):
-        return self.x, self.y
+        return [self.hitbox.x - 45, self.hitbox.y - 100]
 
-    def draw_hitbox(self):
-        win = pygame.display.get_surface()
-        return pygame.draw.rect(win, (255, 0, 0), self.hitbox)
+    def return_hitbox(self):
+        return self.hitbox

@@ -26,7 +26,7 @@ for i in range(shape[0]):
         if array[i][j] < -0.2:
             OBSTACLE_MAP.append([i, j])
             # array[i][j] = 0
-        elif array[i][j] > 0.35:
+        elif array[i][j] > 0.25:
             ENEMY_MAP.append([i, j])
         # else:
             # array[i][j] = 1

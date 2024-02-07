@@ -24,11 +24,11 @@ class System:
         while self.running:
 
             self.win.blit(self.bg, (0, 0))
-            # self.current_room.draw_enemies(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1])
+            self.current_room.draw_grid()
+            self.current_room.draw_enemies()
             self.current_room.draw_obstacles()
-            # self.current_room.draw_enemy_hitboxes()
+            self.current_room.draw_enemy_hitboxes()
             # self.current_room.draw_obstacle_hitboxes()
-            # self.current_room.draw_grid()
             pygame.display.update()
 
             for event in pygame.event.get():
