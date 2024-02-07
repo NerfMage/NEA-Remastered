@@ -8,6 +8,11 @@ TILES = []
 
 
 def get_surrounding(tile):
+    """
+    Function that returns all surrounding tiles for a given tile
+    :param tile: The given tile
+    :return: List of all surrounding tiles
+    """
     row = tile.get_row()
     column = tile.get_column()
     surrounding = []
@@ -19,8 +24,16 @@ def get_surrounding(tile):
 
     return surrounding
 
+
 class Tile:
     def __init__(self, x, y, column, row):
+        """
+        A class for each 70x70px tile in the level
+        :param x: The x-coordinate
+        :param y: The y-coordinate
+        :param column: Its column number
+        :param row: Its row number
+        """
         self.x = x
         self.y = y
         self.column = column

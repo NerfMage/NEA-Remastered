@@ -50,26 +50,31 @@ class Spritesheet:
 
 
 class Creature:
-    def __init__(self, x, y):
+    def __init__(self):
         """
         A superclass for all the enemies and the player
-        :param x,y : The coordinates of the creature
         """
+        self.hitbox = pygame.Rect
+
+    def get_tile(self):
+        for column in rooms.TILES:
+            for tile in column:
+                if tile.return_hitbox().collidepoint(self.hitbox.centerx, self.hitbox.centery):
+                    return tile
 
 
 class Enemy(Creature):
-    def __init__(self, x, y, difficulty, speed, health):
+    def __init__(self, difficulty, speed, health):
         """
         A subclass for all enemies to inherit from
         :param difficulty: An integer to scale the health and damage of the enemy as the run progresses
         """
-        super().__init__(x, y)
+        super().__init__()
         self.difficulty = difficulty
         self.droppable = []
         self.speed = speed
         self.health = health
         self.state = None
-        self.hitbox = pygame.Rect
         self.tile_index = [0][0]
 
     def move(self, x, y):
@@ -85,16 +90,10 @@ class Enemy(Creature):
             self.hitbox.x += int(dist_x * scale_factor)
             self.hitbox.y += int(dist_y * scale_factor)
 
-    def get_tile(self):
-        for column in rooms.TILES:
-            for tile in column:
-                if tile.return_hitbox().collidepoint(self.hitbox.centerx, self.hitbox.centery):
-                    return tile
-
 
 class Slime(Enemy):
     def __init__(self, x, y, difficulty):
-        super().__init__(x, y, difficulty, 5, 10)
+        super().__init__(difficulty, 5, 10)
 
         self.colour = random.choice(['Red', 'Green', 'Blue'])
 
