@@ -117,7 +117,7 @@ class Slime(Enemy):
         self.spritesheets[self.state].update()
         return self.spritesheets[self.state].get_image()
 
-    def return_coords(self):
+    def get_coords(self):
         return [self.hitbox.x - 45, self.hitbox.y - 100]
 
     def return_hitbox(self):
