@@ -43,34 +43,6 @@ class Tile:
         self.occupied = False
         self.sprite = None
 
-        self.g = 0
-        self.h = 999
-        self.f = 0
-        self.parent = None
-
-    def set_g(self, g):
-        self.g = g
-        self.f = self.g + self.h
-
-    def set_h(self, h):
-        self.h = h
-        self.f = self.g + self.h
-
-    def get_h(self):
-        return self.h
-
-    def get_f(self):
-        return self.f
-
-    def get_g(self):
-        return self.g
-
-    def set_parent(self, parent):
-        self.parent = parent
-
-    def get_parent(self):
-        return self.parent
-
     def get_column(self):
         return self.column
 
@@ -96,48 +68,6 @@ class Tile:
         return str(self.row) + str(self.column)
 
 
-def manhattan(start: Tile, end: Tile):
-    dist_x = abs(end.return_center()[0] - start.return_center()[0])
-    dist_y = abs(end.return_center()[1] - start.return_center()[1])
-
-    return dist_x + dist_y
-
-
-def astar(start: Tile, end: Tile):
-    currentNode = start
-    openList = [currentNode]
-    closedList = []
-
-    while currentNode != end:
-        openList.remove(currentNode)
-        closedList.append(currentNode)
-
-        for tile in get_surrounding(currentNode):
-            if tile not in closedList and not tile.return_occupied():
-                if tile not in openList:
-                    tile.set_parent(currentNode)
-                    # tile.set_g(manhattan(start, tile))
-                    tile.set_h(manhattan(tile, end))
-                    openList.append(tile)
-                # else:
-                #     if tile.get_g() < (currentNode.get_g() + manhattan(currentNode, tile)):
-                #         tile.set_parent(currentNode)
-                #         tile.set_g(currentNode.get_g() + manhattan(currentNode, tile))
-
-        currentNode = openList[-1]
-        for tile in openList:
-            if tile.get_h() < currentNode.get_h():
-                currentNode = tile
-
-    path = []
-
-    while currentNode.get_parent() is not None:
-        path.append(currentNode.get_parent())
-        currentNode = currentNode.get_parent()
-
-    return path
-
-
 class Barrel(Tile):
     def __init__(self, x, y, row,  column):
         super().__init__(x, y, row, column)
@@ -153,6 +83,9 @@ class Trap(Tile):
             os.path.join('Sprites', 'Environment', 'Obstacles', 'Bear_Trap.png')), 32, 32, 4, 2)
         self.sprite = self.spritesheet.get_image()
         self.activated = False
+
+
+from astar import astar
 
 
 class Room:
@@ -175,8 +108,9 @@ class Room:
 
         pygame.draw.rect(self.win, (0, 0, 255), TILES[10][10].return_hitbox())
 
-        for tile in astar(self.enemies[0].get_tile(), TILES[10][10]):
-            pygame.draw.rect(self.win, (50, 50, 50), tile.return_hitbox())
+        for enemy in self.enemies:
+            for tile in astar(enemy.get_tile(), TILES[10][10]):
+                pygame.draw.rect(self.win, (50, 50, 50), tile.return_hitbox())
 
     def generate(self):
         for x in range(24):
