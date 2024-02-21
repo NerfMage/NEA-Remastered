@@ -1,3 +1,4 @@
+import astar
 import creatures
 import map
 import random
@@ -58,7 +59,7 @@ class Tile:
     def get_coords(self):
         return [self.x, self.y]
 
-    def return_center(self):
+    def get_center(self):
         return [self.hitbox.centerx, self.hitbox.centery]
 
     def return_sprite(self):
@@ -85,9 +86,6 @@ class Trap(Tile):
         self.activated = False
 
 
-from astar import astar
-
-
 class Room:
     def __init__(self, difficulty):
         """
@@ -109,7 +107,9 @@ class Room:
         pygame.draw.rect(self.win, (0, 0, 255), TILES[10][10].return_hitbox())
 
         for enemy in self.enemies:
-            for tile in astar(enemy.get_tile(), TILES[10][10]):
+            enemy.move(TILES[10][10])
+
+            for tile in astar.astar(enemy.get_tile(), TILES[10][10]):
                 pygame.draw.rect(self.win, (50, 50, 50), tile.return_hitbox())
 
     def generate(self):

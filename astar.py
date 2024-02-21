@@ -20,14 +20,14 @@ class Node:
         return self.parent
 
 
-def manhattan(start: rooms.Tile, end: rooms.Tile) -> int:
-    dist_x = abs(end.return_center()[0] - start.return_center()[0])
-    dist_y = abs(end.return_center()[1] - start.return_center()[1])
+def manhattan(start, end) -> int:
+    dist_x = abs(end.get_center()[0] - start.get_center()[0])
+    dist_y = abs(end.get_center()[1] - start.get_center()[1])
 
     return dist_x + dist_y
 
 
-def astar(start: rooms.Tile, end: rooms.Tile) -> list:
+def astar(start, end) -> list:
     currentNode = Node(None, [start.get_column(), start.get_row()], 999)
     openList = [currentNode]
     closedList = []

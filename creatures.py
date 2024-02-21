@@ -2,6 +2,7 @@ import pygame
 import os
 import random
 import rooms
+import astar
 
 
 def Factory(enemy, *args):
@@ -75,20 +76,18 @@ class Enemy(Creature):
         self.speed = speed
         self.health = health
         self.state = None
-        self.tile_index = [0][0]
 
-    def move(self, x, y):
-        dist_x = x - self.hitbox.centerx
-        dist_y = y - self.hitbox.centery
-        tot_dist = ((dist_x ** 2) + (dist_y ** 2)) ** 0.5
+    def move(self, dest):
+        if len(astar.astar(self.get_tile(), dest)) > 1:
+            tile = astar.astar(self.get_tile(), dest)[-2]
 
-        if tot_dist < 5:
-            pass
-        else:
+            dist_x = self.hitbox.centerx - tile.get_center()[0]
+            dist_y = self.hitbox.centery - tile.get_center()[1]
+            tot_dist = ((dist_x ** 2) + (dist_y ** 2)) ** 0.5
             scale_factor = self.speed / tot_dist
 
-            self.hitbox.x += int(dist_x * scale_factor)
-            self.hitbox.y += int(dist_y * scale_factor)
+            self.hitbox.centerx -= int(dist_x * scale_factor)
+            self.hitbox.centery -= int(dist_y * scale_factor)
 
 
 class Slime(Enemy):
