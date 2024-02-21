@@ -173,10 +173,7 @@ class Room:
                 else:
                     pygame.draw.rect(self.win, (255, 0, 0), tile.return_hitbox(), 1)
 
-        for i in get_surrounding(self.enemies[0].get_tile()):
-            pygame.draw.rect(self.win, (0, 0, 255), i.return_hitbox())
-
-        pygame.draw.rect(self.win, (50, 50, 50), TILES[10][10].return_hitbox())
+        pygame.draw.rect(self.win, (0, 0, 255), TILES[10][10].return_hitbox())
 
         for tile in astar(self.enemies[0].get_tile(), TILES[10][10]):
             pygame.draw.rect(self.win, (50, 50, 50), tile.return_hitbox())
