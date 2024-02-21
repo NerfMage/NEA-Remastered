@@ -55,4 +55,10 @@ def astar(start: rooms.Tile, end: rooms.Tile) -> list:
         path.append(rooms.TILES[currentNode.get_parent().get_coords()[0]][currentNode.get_parent().get_coords()[1]])
         currentNode = currentNode.get_parent()
 
+    for node in closedList:
+        del node
+
+    for node in openList:
+        del node
+
     return path
