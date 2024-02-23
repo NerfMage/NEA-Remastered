@@ -21,8 +21,8 @@ class Node:
 
 
 def manhattan(start, end) -> int:
-    dist_x = abs(end.get_center()[0] - start.get_center()[0])
-    dist_y = abs(end.get_center()[1] - start.get_center()[1])
+    dist_x = abs(end.get_center('x') - start.get_center('x'))
+    dist_y = abs(end.get_center('y') - start.get_center('y'))
 
     return dist_x + dist_y
 
@@ -37,7 +37,7 @@ def astar(start, end) -> list:
         closedList.append(currentNode.get_coords())
 
         for tile in rooms.get_surrounding(rooms.TILES[currentNode.get_coords()[0]][currentNode.get_coords()[1]]):
-            if tile.get_coords() not in closedList and not tile.return_occupied():
+            if tile.get_coords() not in closedList:
                 if tile not in openList:
                     openList.append(Node(currentNode, [tile.get_column(), tile.get_row()], manhattan(tile, end)))
 
@@ -49,16 +49,16 @@ def astar(start, end) -> list:
             if node.get_h() < currentNode.get_h():
                 currentNode = node
 
-    path = []
+    path = [end]
 
     while currentNode.get_parent() is not None:
         path.append(rooms.TILES[currentNode.get_parent().get_coords()[0]][currentNode.get_parent().get_coords()[1]])
         currentNode = currentNode.get_parent()
 
-    for node in closedList:
-        del node
+    for _ in closedList:
+        del _
 
-    for node in openList:
-        del node
+    for _ in openList:
+        del _
 
     return path
