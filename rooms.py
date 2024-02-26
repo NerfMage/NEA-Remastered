@@ -103,7 +103,7 @@ class Trap(Tile):
 
 
 class Room:
-    def __init__(self, difficulty):
+    def __init__(self, difficulty, player):
         """
         A class to hold all the objects in one level
         :param difficulty: The difficulty scalar of all the enemies in the room
@@ -111,6 +111,7 @@ class Room:
         self.win = pygame.display.get_surface()
         self.difficulty = difficulty
         self.enemies = []
+        self.player = player
 
     def draw_grid(self):
         """
@@ -146,9 +147,9 @@ class Room:
                 column.append(tile)
             TILES.append(column)
 
-        for coords in map.ENEMY_MAP:
-            enemy = creatures.Factory('Slime', coords[0] * 70 + 35, coords[1] * 70 + 35, 1)
-            self.enemies.append(enemy)
+        # for coords in map.ENEMY_MAP:
+        #     enemy = creatures.Factory('Slime', coords[0] * 70 + 35, coords[1] * 70 + 35, 1)
+        #     self.enemies.append(enemy)
 
     def draw_obstacles(self):
         """
@@ -160,7 +161,7 @@ class Room:
                 if tile.return_sprite() is not None:
                     self.win.blit(tile.return_sprite(), tile.get_coords())
 
-    def draw_enemies(self):
+    def draw_creatures(self):
         """
         Method that draws all creatures in the level to their respective locations
         :return: None
@@ -173,10 +174,19 @@ class Room:
             coords = enemy.get_coords()
             self.win.blit(sprite, coords)
 
+        self.win.blit(self.player.return_sprite(), self.player.get_coords())
+
     def draw_enemy_hitboxes(self):
         """
-        Debuggin method that draws all enemy hitboxes
+        Debugging method that draws all enemy hitboxes
         :return: None
         """
         for enemy in self.enemies:
             pygame.draw.rect(self.win, (0, 255, 0), enemy.get_hitbox())
+
+    def draw_player_hitbox(self):
+        """
+        Debugging method that draws player hitbox
+        :return: None
+        """
+        pygame.draw.rect(self.win, (0, 0, 255), self.player.get_hitbox())

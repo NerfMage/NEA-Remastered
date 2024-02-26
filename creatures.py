@@ -7,7 +7,7 @@ import astar
 
 def Factory(enemy, *args):
     """
-    A function to return the appropriate subcalss based on an input
+    A function to return the appropriate subcalss based on an n
     :param enemy: the subclass name
     :param args: the subcalss arguments
     :return: the subclass object
@@ -60,12 +60,16 @@ class Spritesheet:
 
 
 class Creature:
-    def __init__(self, hitbox):
+    def __init__(self, hitbox, speed):
         """
         A superclass for all the enemies and the player
         :param hitbox: a Pygame.Rect for the objects' hitbox
+        :param speed: an integer value for the number of pixels moved per frame
         """
         self.hitbox = hitbox
+        self.speed = speed
+        self.spritesheets = {}
+        self.state = 'run_left'
 
     def get_tile(self):
         """
@@ -79,6 +83,50 @@ class Creature:
     def get_hitbox(self) -> pygame.Rect:
         return self.hitbox
 
+    def return_sprite(self) -> pygame.Surface:
+        """
+        :return: Image from the Spritesheet
+        """
+        self.spritesheets[self.state].update()
+        return self.spritesheets[self.state].get_image()
+
+
+class Player(Creature):
+    def __init__(self, x, y):
+        super().__init__(pygame.Rect(x, y, 40, 90), 15)
+        # Dict containing all the spritesheets for the Player's animations
+        self.spritesheets = {
+            'idle_right': Spritesheet(pygame.image.load(os.path.join(
+                'Sprites', 'Player', 'Idle_Right.png')), 128, 128, 6, 1.5),
+            'idle_left': Spritesheet(pygame.image.load(os.path.join(
+                'Sprites', 'Player', 'Idle_Left.png')), 128, 128, 6, 1.5),
+            'run_right': Spritesheet(pygame.image.load(os.path.join(
+                'Sprites', 'Player', 'Run_Right.png')), 128, 128, 8, 1.5),
+            'run_left': Spritesheet(pygame.image.load(os.path.join(
+                'Sprites', 'Player', 'Run_Left.png')), 128, 128, 8, 1.5),
+        }
+
+    def get_coords(self) -> list:
+        """
+        :return: The coordinates that the sprite needs to be drawn to in order for the hitbox to be centered
+        """
+        if self.state == 'run_right':
+            return [self.hitbox.x - 40, self.hitbox.y - 90]
+        elif self.state == 'run_left':
+            return [self.hitbox.x - 110, self.hitbox.y - 90]
+
+    def move(self, key):
+        if key[pygame.K_w] and self.hitbox.y > 0:
+            self.hitbox.y -= self.speed
+        if key[pygame.K_s] and self.hitbox.y < 950:
+            self.hitbox.y += self.speed
+        if key[pygame.K_a] and self.hitbox.x > 30:
+            self.hitbox.x -= self.speed
+            self.state = 'run_left'
+        if key[pygame.K_d] and self.hitbox.x < 1620:
+            self.hitbox.x += self.speed
+            self.state = 'run_right'
+
 
 class Enemy(Creature):
     def __init__(self, difficulty, speed, health, hitbox):
@@ -90,10 +138,9 @@ class Enemy(Creature):
         :param health: Hit points that the Enemy can recive before dying
         :param hitbox: Pygame Rect that governs all collisions
         """
-        super().__init__(hitbox)
+        super().__init__(hitbox, speed)
         self.difficulty = difficulty
         self.droppable = []
-        self.speed = speed
         self.health = health
         self.state = None
 
@@ -143,13 +190,6 @@ class Slime(Enemy):
         self.state = 'move_left'
         self.sprite = self.return_sprite()
         self.hitbox.center = [x, y]
-
-    def return_sprite(self) -> pygame.Surface:
-        """
-        :return: Image from the Spritesheet
-        """
-        self.spritesheets[self.state].update()
-        return self.spritesheets[self.state].get_image()
 
     def get_coords(self) -> list:
         """
