@@ -33,11 +33,11 @@ class System:
 
             self.player.move(pygame.key.get_pressed())
 
-            self.current_room.draw_creatures()
             self.current_room.draw_obstacles()
+            self.current_room.draw_creatures()
             # self.current_room.draw_enemy_hitboxes()
             # self.current_room.draw_obstacle_hitboxes()
-            self.current_room.draw_player_hitbox()
+            # self.current_room.draw_player_hitbox()
             pygame.display.update()
 
             for event in pygame.event.get():

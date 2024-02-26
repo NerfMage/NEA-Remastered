@@ -77,7 +77,7 @@ class Creature:
         """
         for column in rooms.TILES:
             for tile in column:
-                if pygame.Rect.colliderect(self.get_hitbox(), tile.get_hitbox()) and not tile.return_occupied():
+                if pygame.Rect.colliderect(self.hitbox, tile.get_hitbox()) and not tile.return_occupied():
                     return tile
 
     def get_hitbox(self) -> pygame.Rect:
@@ -93,7 +93,7 @@ class Creature:
 
 class Player(Creature):
     def __init__(self, x, y):
-        super().__init__(pygame.Rect(x, y, 40, 90), 15)
+        super().__init__(pygame.Rect(x, y, 40, 70), 15)
         # Dict containing all the spritesheets for the Player's animations
         self.spritesheets = {
             'idle_right': Spritesheet(pygame.image.load(os.path.join(
@@ -111,21 +111,41 @@ class Player(Creature):
         :return: The coordinates that the sprite needs to be drawn to in order for the hitbox to be centered
         """
         if self.state == 'run_right':
-            return [self.hitbox.x - 40, self.hitbox.y - 90]
+            return [self.hitbox.x - 40, self.hitbox.y - 110]
         elif self.state == 'run_left':
-            return [self.hitbox.x - 110, self.hitbox.y - 90]
+            return [self.hitbox.x - 110, self.hitbox.y - 110]
 
     def move(self, key):
         if key[pygame.K_w] and self.hitbox.y > 0:
             self.hitbox.y -= self.speed
+            if self.get_tile().return_occupied():
+                self.hitbox.y += self.speed
         if key[pygame.K_s] and self.hitbox.y < 950:
             self.hitbox.y += self.speed
+            if self.get_tile().return_occupied():
+                self.hitbox.y -= self.speed
+
         if key[pygame.K_a] and self.hitbox.x > 30:
             self.hitbox.x -= self.speed
-            self.state = 'run_left'
+            if self.get_tile().return_occupied():
+                self.hitbox.x += self.speed
+            else:
+                self.state = 'run_left'
         if key[pygame.K_d] and self.hitbox.x < 1620:
             self.hitbox.x += self.speed
-            self.state = 'run_right'
+            if self.get_tile().return_occupied():
+                self.hitbox.x -= self.speed
+            else:
+                self.state = 'run_right'
+
+    def get_tile(self):
+        """
+        :return: the tile that the Creature is currently occupying
+        """
+        for column in rooms.TILES:
+            for tile in column:
+                if tile.get_hitbox().collidepoint(self.hitbox.center):
+                    return tile
 
 
 class Enemy(Creature):

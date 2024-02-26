@@ -83,7 +83,7 @@ class Barrel(Tile):
         super().__init__(x, y, row, column)
         self.occupied = True
         self.sprite = pygame.transform.scale_by(
-            pygame.image.load(os.path.join('Sprites', 'Environment', 'Obstacles', 'Barrel.png')), 1.75)
+            pygame.image.load(os.path.join('Sprites', 'Environment', 'Obstacles', 'Barrel.png')), 2)
 
 
 class Trap(Tile):
@@ -190,3 +190,4 @@ class Room:
         :return: None
         """
         pygame.draw.rect(self.win, (0, 0, 255), self.player.get_hitbox())
+        pygame.draw.rect(self.win, (0, 0, 255), self.player.get_tile().get_hitbox())
