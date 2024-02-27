@@ -67,6 +67,9 @@ class Tile:
     def return_sprite(self) -> pygame.Surface:
         return self.sprite
 
+    def get_map_coords(self):
+        return [self.column, self.row]
+
     def __str__(self):
         return str(self.row) + str(self.column)
 
@@ -100,6 +103,12 @@ class Trap(Tile):
             os.path.join('Sprites', 'Environment', 'Obstacles', 'Bear_Trap.png')), 32, 32, 4, 2)
         self.sprite = self.spritesheet.get_image()
         self.activated = False
+
+    def activate(self):
+        if not self.activated:
+            self.activated = True
+            self.spritesheet.update()
+            self.sprite = self.spritesheet.get_image()
 
 
 class Room:
@@ -147,9 +156,13 @@ class Room:
                 column.append(tile)
             TILES.append(column)
 
-        # for coords in map.ENEMY_MAP:
-        #     enemy = creatures.Factory('Slime', coords[0] * 70 + 35, coords[1] * 70 + 35, 1)
-        #     self.enemies.append(enemy)
+        enemy_count = 0
+        for coords in map.ENEMY_MAP:
+            enemy = creatures.Factory('Slime', coords[0] * 70 + 35, coords[1] * 70 + 35, 1)
+            self.enemies.append(enemy)
+            enemy_count += 1
+            if enemy_count == 12:
+                break
 
     def draw_obstacles(self):
         """
@@ -167,7 +180,7 @@ class Room:
         :return: None
         """
         for enemy in self.enemies:
-            enemy.move(TILES[0][0])
+            enemy.move(self.player.get_tile())
             # for tile in astar.astar(enemy.get_tile(), TILES[10][10]):
             #     pygame.draw.rect(self.win, (50, 50, 50), tile.get_hitbox())
             sprite = enemy.return_sprite()

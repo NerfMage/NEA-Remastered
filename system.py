@@ -52,4 +52,4 @@ class System:
                         pygame.quit()
                         self.running = False
 
-            self.clock.tick_busy_loop(20)
+            self.clock.tick_busy_loop(30)

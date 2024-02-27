@@ -93,7 +93,7 @@ class Creature:
 
 class Player(Creature):
     def __init__(self, x, y):
-        super().__init__(pygame.Rect(x, y, 40, 70), 15)
+        super().__init__(pygame.Rect(x, y, 40, 70), 10)
         # Dict containing all the spritesheets for the Player's animations
         self.spritesheets = {
             'idle_right': Spritesheet(pygame.image.load(os.path.join(
@@ -118,25 +118,18 @@ class Player(Creature):
     def move(self, key):
         if key[pygame.K_w] and self.hitbox.y > 0:
             self.hitbox.y -= self.speed
-            if self.get_tile().return_occupied():
-                self.hitbox.y += self.speed
         if key[pygame.K_s] and self.hitbox.y < 950:
             self.hitbox.y += self.speed
-            if self.get_tile().return_occupied():
-                self.hitbox.y -= self.speed
 
         if key[pygame.K_a] and self.hitbox.x > 30:
             self.hitbox.x -= self.speed
-            if self.get_tile().return_occupied():
-                self.hitbox.x += self.speed
-            else:
-                self.state = 'run_left'
+            self.state = 'run_left'
         if key[pygame.K_d] and self.hitbox.x < 1620:
             self.hitbox.x += self.speed
-            if self.get_tile().return_occupied():
-                self.hitbox.x -= self.speed
-            else:
-                self.state = 'run_right'
+            self.state = 'run_right'
+
+        if isinstance(self.get_tile(), rooms.Trap):
+            self.get_tile().activate()
 
     def get_tile(self):
         """

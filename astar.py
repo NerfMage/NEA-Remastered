@@ -8,7 +8,7 @@ class Node:
         self.h = h
 
     def get_coords(self):
-        return self.coords
+        return [self.coords[0], self.coords[1]]
 
     def get_tile(self):
         return rooms.TILES[self.coords[0]][self.coords[1]]
@@ -32,25 +32,20 @@ def astar(start, end) -> list:
     openList = [currentNode]
     closedList = []
 
-    while currentNode.get_coords() != [end.get_column(), end.get_row()]:
+    while currentNode.get_coords() != end.get_map_coords():
         openList.remove(currentNode)
         closedList.append(currentNode.get_coords())
 
-        for tile in rooms.get_surrounding(rooms.TILES[currentNode.get_coords()[0]][currentNode.get_coords()[1]]):
-            if tile.get_coords() not in closedList:
-                if tile not in openList:
-                    openList.append(Node(currentNode, [tile.get_column(), tile.get_row()], manhattan(tile, end)))
-
-        if len(openList) == 0:
-            return [start]
+        for tile in rooms.get_surrounding(currentNode.get_tile()):
+            if tile.get_map_coords() not in closedList and not any(tile.get_map_coords() == node.get_coords() for node in openList):
+                openList.append(Node(currentNode, tile.get_map_coords(), manhattan(end, tile)))
 
         currentNode = openList[-1]
         for node in openList:
-            if node.get_h() < currentNode.get_h():
+            if node.get_h() <= currentNode.get_h():
                 currentNode = node
 
     path = [end]
-
     while currentNode.get_parent() is not None:
         path.append(rooms.TILES[currentNode.get_parent().get_coords()[0]][currentNode.get_parent().get_coords()[1]])
         currentNode = currentNode.get_parent()
