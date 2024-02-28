@@ -59,9 +59,6 @@ class Spritesheet:
 
         return image.convert_alpha()
 
-    def get_frame(self):
-        return self.frame
-
 
 class Creature:
     def __init__(self, hitbox, speed):
@@ -117,18 +114,26 @@ class Player(Creature):
         """
         :return: The coordinates that the sprite needs to be drawn to in order for the hitbox to be centered
         """
-        if self.state == 'run_right':
+        if self.state in ['run_right', 'idle_right']:
             return [self.hitbox.x - 40, self.hitbox.y - 110]
-        elif self.state == 'run_left':
+        elif self.state in ['run_left', 'idle_left']:
             return [self.hitbox.x - 110, self.hitbox.y - 110]
 
     def move(self, key):
         if key[pygame.K_w] and rooms.get_up(self.get_tile()) is not None \
                 and not rooms.get_up(self.get_tile()).return_occupied():
             self.hitbox.y -= self.speed
+            if self.state == 'idle_right':
+                self.state = 'run_right'
+            elif self.state == 'idle_left':
+                self.state = 'run_left'
         if key[pygame.K_s] and rooms.get_down(self.get_tile()) is not None \
                 and not rooms.get_down(self.get_tile()).return_occupied():
             self.hitbox.y += self.speed
+            if self.state == 'idle_right':
+                self.state = 'run_right'
+            elif self.state == 'idle_left':
+                self.state = 'run_left'
 
         if key[pygame.K_a]:
             self.state = 'run_left'
@@ -138,6 +143,12 @@ class Player(Creature):
             self.state = 'run_right'
             if rooms.get_right(self.get_tile()) is not None and not rooms.get_right(self.get_tile()).return_occupied():
                 self.hitbox.x += self.speed
+
+        if not any([key[pygame.K_w], key[pygame.K_a], key[pygame.K_s], key[pygame.K_d]]):
+            if self.state == 'run_right':
+                self.state = 'idle_right'
+            elif self.state == 'run_left':
+                self.state = 'idle_left'
 
         if isinstance(self.get_tile(), rooms.Trap):
             self.get_tile().activate()
