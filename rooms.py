@@ -1,6 +1,7 @@
 import astar
 import creatures
 import map
+import system
 import random
 import pygame
 import os
@@ -10,6 +11,7 @@ TILES = []
 
 def get_surrounding(tile) -> list:
     """
+    Global function used to find surrounding tiles of a given tile
     :param tile: The given tile
     :return: List of all surrounding tiles
     """
@@ -135,12 +137,13 @@ class Trap(Tile):
     def activate(self):
         if not self.activated:
             self.activated = True
+            system.PLAYER.hit(30)
             self.spritesheet.update()
             self.sprite = self.spritesheet.get_image()
 
 
 class Room:
-    def __init__(self, difficulty, player):
+    def __init__(self, difficulty):
         """
         A class to hold all the objects in one level
         :param difficulty: The difficulty scalar of all the enemies in the room
@@ -148,7 +151,6 @@ class Room:
         self.win = pygame.display.get_surface()
         self.difficulty = difficulty
         self.enemies = []
-        self.player = player
 
     def draw_grid(self):
         """
@@ -206,12 +208,14 @@ class Room:
         :return: None
         """
         for enemy in self.enemies:
-            enemy.move(self.player.get_tile())
+            enemy.move(system.PLAYER.get_tile())
             sprite = enemy.return_sprite()
             coords = enemy.get_coords()
             self.win.blit(sprite, coords)
 
-        self.win.blit(self.player.return_sprite(), self.player.get_coords())
+        self.win.blit(system.PLAYER.return_sprite(), system.PLAYER.get_coords())
+        pygame.draw.rect(self.win, (255, 0, 0), (10, 980, 400, 60))
+        pygame.draw.rect(self.win, (0, 255, 0), system.PLAYER.get_healthbar())
 
     def draw_enemy_hitboxes(self):
         """
@@ -220,7 +224,7 @@ class Room:
         """
         for enemy in self.enemies:
             pygame.draw.rect(self.win, (0, 255, 0), enemy.get_hitbox())
-            for tile in astar.astar(enemy.get_tile(), self.player.get_tile()):
+            for tile in astar.astar(enemy.get_tile(), system.PLAYER.get_tile()):
                 pygame.draw.rect(self.win, (50, 50, 50), tile.get_hitbox())
 
     def draw_player_hitbox(self):
@@ -228,4 +232,4 @@ class Room:
         Debugging method that draws player hitbox
         :return: None
         """
-        pygame.draw.rect(self.win, (0, 0, 255), self.player.get_tile().get_hitbox())
+        pygame.draw.rect(self.win, (0, 0, 255), system.PLAYER.get_tile().get_hitbox())

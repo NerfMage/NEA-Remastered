@@ -3,6 +3,7 @@ import os
 import random
 import rooms
 import astar
+import system
 
 
 def Factory(enemy, *args):
@@ -58,6 +59,9 @@ class Spritesheet:
 
         return image.convert_alpha()
 
+    def get_frame(self):
+        return self.frame
+
 
 class Creature:
     def __init__(self, hitbox, speed):
@@ -105,6 +109,9 @@ class Player(Creature):
             'run_left': Spritesheet(pygame.image.load(os.path.join(
                 'Sprites', 'Player', 'Run_Left.png')), 128, 128, 8, 1.5),
         }
+        self.max_health = 300
+        self.current_health = self.max_health
+        self.health_bar = pygame.Rect(10, 980, 400, 60)
 
     def get_coords(self) -> list:
         """
@@ -116,26 +123,28 @@ class Player(Creature):
             return [self.hitbox.x - 110, self.hitbox.y - 110]
 
     def move(self, key):
-        if key[pygame.K_w] and rooms.get_up(self.get_tile()) is not None\
+        if key[pygame.K_w] and rooms.get_up(self.get_tile()) is not None \
                 and not rooms.get_up(self.get_tile()).return_occupied():
             self.hitbox.y -= self.speed
-        if key[pygame.K_s] and rooms.get_down(self.get_tile()) is not None\
+        if key[pygame.K_s] and rooms.get_down(self.get_tile()) is not None \
                 and not rooms.get_down(self.get_tile()).return_occupied():
             self.hitbox.y += self.speed
 
         if key[pygame.K_a]:
             self.state = 'run_left'
-            if rooms.get_left(self.get_tile()) is not None\
-                and not rooms.get_left(self.get_tile()).return_occupied():
+            if rooms.get_left(self.get_tile()) is not None and not rooms.get_left(self.get_tile()).return_occupied():
                 self.hitbox.x -= self.speed
         if key[pygame.K_d]:
             self.state = 'run_right'
-            if rooms.get_right(self.get_tile()) is not None\
-                and not rooms.get_right(self.get_tile()).return_occupied():
+            if rooms.get_right(self.get_tile()) is not None and not rooms.get_right(self.get_tile()).return_occupied():
                 self.hitbox.x += self.speed
 
         if isinstance(self.get_tile(), rooms.Trap):
             self.get_tile().activate()
+
+    def get_healthbar(self):
+        self.health_bar = self.health_bar = pygame.Rect(10, 980, 400 * (self.current_health/self.max_health), 60)
+        return self.health_bar
 
     def get_tile(self):
         """
@@ -145,6 +154,9 @@ class Player(Creature):
             for tile in column:
                 if tile.get_hitbox().collidepoint(self.hitbox.center):
                     return tile
+
+    def hit(self, damage: int):
+        self.current_health -= damage
 
 
 class Enemy(Creature):
@@ -183,6 +195,19 @@ class Enemy(Creature):
                     self.hitbox.x -= dist_x * scale_factor
                     self.hitbox.y -= dist_y * scale_factor
 
+                    if dist_x > 0:
+                        self.state = 'move_right'
+                    else:
+                        self.state = 'move_left'
+
+                else:
+                    if self.state == 'move_right':
+                        self.state = 'attack_left'
+                    elif self.state == 'move_left':
+                        self.state = 'attack_right'
+
+                    system.PLAYER.hit(5)
+
 
 class Slime(Enemy):
     def __init__(self, x, y, difficulty):
@@ -201,7 +226,11 @@ class Slime(Enemy):
             'move_right': Spritesheet(pygame.image.load(os.path.join(
                 'Sprites', 'Enemies', 'Slime', self.colour, 'Move_Right.png')), 128, 128, 7, 1),
             'move_left': Spritesheet(pygame.image.load(os.path.join(
-                'Sprites', 'Enemies', 'Slime', self.colour, 'Move_Left.png')), 128, 128, 7, 1)
+                'Sprites', 'Enemies', 'Slime', self.colour, 'Move_Left.png')), 128, 128, 7, 1),
+            'attack_right': Spritesheet(pygame.image.load(os.path.join(
+                'Sprites', 'Enemies', 'Slime', self.colour, 'Attack_Right.png')), 128, 128, 4, 1),
+            'attack_left': Spritesheet(pygame.image.load(os.path.join(
+                'Sprites', 'Enemies', 'Slime', self.colour, 'Attack_Left.png')), 128, 128, 4, 1),
         }
 
         # Stats

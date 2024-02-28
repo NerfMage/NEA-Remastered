@@ -3,6 +3,8 @@ import os
 from rooms import Room
 import creatures
 
+PLAYER = creatures.Player(840, 900)
+
 
 class System:
     def __init__(self):
@@ -17,8 +19,7 @@ class System:
         self.bg = pygame.transform.scale(pygame.image.load(
             os.path.join('Sprites', 'Environment', 'Floor.png')), [1680, 1050])
 
-        self.player = creatures.Player(100, 100)
-        self.current_room = Room(1, self.player)
+        self.current_room = Room(1)
         self.current_room.generate()
 
     def run(self):
@@ -31,12 +32,12 @@ class System:
             self.win.blit(self.bg, (0, 0))
             # self.current_room.draw_grid()
 
-            self.player.move(pygame.key.get_pressed())
+            PLAYER.move(pygame.key.get_pressed())
 
             self.current_room.draw_obstacles()
             # self.current_room.draw_enemy_hitboxes()
             self.current_room.draw_creatures()
-            self.current_room.draw_grid()
+            # self.current_room.draw_grid()
             # self.current_room.draw_player_hitbox()
             pygame.display.update()
 
