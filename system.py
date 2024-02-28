@@ -53,4 +53,7 @@ class System:
                         pygame.quit()
                         self.running = False
 
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    PLAYER.basic_attack()
+
             self.clock.tick_busy_loop(30)

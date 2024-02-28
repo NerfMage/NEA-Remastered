@@ -59,6 +59,9 @@ class Spritesheet:
 
         return image.convert_alpha()
 
+    def get_frame(self):
+        return self.frame
+
 
 class Creature:
     def __init__(self, hitbox, speed):
@@ -105,6 +108,10 @@ class Player(Creature):
                 'Sprites', 'Player', 'Run_Right.png')), 128, 128, 8, 1.5),
             'run_left': Spritesheet(pygame.image.load(os.path.join(
                 'Sprites', 'Player', 'Run_Left.png')), 128, 128, 8, 1.5),
+            'attack_right': Spritesheet(pygame.image.load(os.path.join(
+                'Sprites', 'Player', 'Attack_Right.png')), 128, 128, 4, 1.5),
+            'attack_left': Spritesheet(pygame.image.load(os.path.join(
+                'Sprites', 'Player', 'Attack_Left.png')), 128, 128, 4, 1.5),
         }
         self.max_health = 300
         self.current_health = self.max_health
@@ -114,44 +121,58 @@ class Player(Creature):
         """
         :return: The coordinates that the sprite needs to be drawn to in order for the hitbox to be centered
         """
-        if self.state in ['run_right', 'idle_right']:
+        if self.state in ['run_right', 'idle_right', 'attack_right']:
             return [self.hitbox.x - 40, self.hitbox.y - 110]
-        elif self.state in ['run_left', 'idle_left']:
+        elif self.state in ['run_left', 'idle_left', 'attack_left']:
             return [self.hitbox.x - 110, self.hitbox.y - 110]
 
     def move(self, key):
-        if key[pygame.K_w] and rooms.get_up(self.get_tile()) is not None \
-                and not rooms.get_up(self.get_tile()).return_occupied():
-            self.hitbox.y -= self.speed
-            if self.state == 'idle_right':
-                self.state = 'run_right'
-            elif self.state == 'idle_left':
-                self.state = 'run_left'
-        if key[pygame.K_s] and rooms.get_down(self.get_tile()) is not None \
-                and not rooms.get_down(self.get_tile()).return_occupied():
-            self.hitbox.y += self.speed
-            if self.state == 'idle_right':
-                self.state = 'run_right'
-            elif self.state == 'idle_left':
-                self.state = 'run_left'
+        if self.state not in ['attack_left', 'attack_right']:
+            if key[pygame.K_w] and rooms.get_up(self.get_tile()) is not None \
+                    and not rooms.get_up(self.get_tile()).return_occupied():
+                self.hitbox.y -= self.speed
+                if self.state == 'idle_right':
+                    self.state = 'run_right'
+                elif self.state == 'idle_left':
+                    self.state = 'run_left'
+            if key[pygame.K_s] and rooms.get_down(self.get_tile()) is not None \
+                    and not rooms.get_down(self.get_tile()).return_occupied():
+                self.hitbox.y += self.speed
+                if self.state == 'idle_right':
+                    self.state = 'run_right'
+                elif self.state == 'idle_left':
+                    self.state = 'run_left'
 
-        if key[pygame.K_a]:
-            self.state = 'run_left'
-            if rooms.get_left(self.get_tile()) is not None and not rooms.get_left(self.get_tile()).return_occupied():
-                self.hitbox.x -= self.speed
-        if key[pygame.K_d]:
-            self.state = 'run_right'
-            if rooms.get_right(self.get_tile()) is not None and not rooms.get_right(self.get_tile()).return_occupied():
-                self.hitbox.x += self.speed
+            if key[pygame.K_a]:
+                self.state = 'run_left'
+                if rooms.get_left(self.get_tile()) is not None and not rooms.get_left(self.get_tile()).return_occupied():
+                    self.hitbox.x -= self.speed
+            if key[pygame.K_d]:
+                self.state = 'run_right'
+                if rooms.get_right(self.get_tile()) is not None and not rooms.get_right(self.get_tile()).return_occupied():
+                    self.hitbox.x += self.speed
 
-        if not any([key[pygame.K_w], key[pygame.K_a], key[pygame.K_s], key[pygame.K_d]]):
-            if self.state == 'run_right':
-                self.state = 'idle_right'
-            elif self.state == 'run_left':
+            if not any([key[pygame.K_w], key[pygame.K_a], key[pygame.K_s], key[pygame.K_d]]):
+                if self.state == 'run_right':
+                    self.state = 'idle_right'
+                elif self.state == 'run_left':
+                    self.state = 'idle_left'
+
+        elif self.state in ['attack_left', 'attack_right'] and self.spritesheets[self.state].get_frame() == 3:
+            self.spritesheets[self.state].update()
+            if self.state == 'attack_left':
                 self.state = 'idle_left'
+            if self.state == 'attack_right':
+                self.state = 'idle_right'
 
         if isinstance(self.get_tile(), rooms.Trap):
             self.get_tile().activate()
+
+    def basic_attack(self):
+        if self.state in ['run_right', 'idle_right']:
+            self.state = 'attack_right'
+        elif self.state in ['run_left', 'idle_left']:
+            self.state = 'attack_left'
 
     def get_healthbar(self):
         self.health_bar = self.health_bar = pygame.Rect(10, 980, 400 * (self.current_health/self.max_health), 60)
