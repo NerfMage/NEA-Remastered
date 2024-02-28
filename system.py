@@ -56,4 +56,4 @@ class System:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     PLAYER.basic_attack()
 
-            self.clock.tick_busy_loop(30)
+            pygame.time.Clock.tick(self.clock, 20)

@@ -64,7 +64,7 @@ class Spritesheet:
 
 
 class Creature:
-    def __init__(self, hitbox, speed):
+    def __init__(self, hitbox, speed, health):
         """
         A superclass for all the enemies and the player
         :param hitbox: a Pygame.Rect for the objects' hitbox
@@ -74,6 +74,8 @@ class Creature:
         self.speed = speed
         self.spritesheets = {}
         self.state = 'run_left'
+        self.max_health = health
+        self.current_health = self.max_health
 
     def get_tile(self):
         """
@@ -94,10 +96,19 @@ class Creature:
         self.spritesheets[self.state].update()
         return self.spritesheets[self.state].get_image()
 
+    def hit(self, damage: int):
+        self.current_health -= damage
+
+    def is_dead(self):
+        if self.current_health <= 0:
+            return True
+        else:
+            return False
+
 
 class Player(Creature):
     def __init__(self, x, y):
-        super().__init__(pygame.Rect(x, y, 40, 70), 10)
+        super().__init__(pygame.Rect(x, y, 40, 70), 10, 300)
         # Dict containing all the spritesheets for the Player's animations
         self.spritesheets = {
             'idle_right': Spritesheet(pygame.image.load(os.path.join(
@@ -113,8 +124,6 @@ class Player(Creature):
             'attack_left': Spritesheet(pygame.image.load(os.path.join(
                 'Sprites', 'Player', 'Attack_Left.png')), 128, 128, 4, 1.5),
         }
-        self.max_health = 300
-        self.current_health = self.max_health
         self.health_bar = pygame.Rect(10, 980, 400, 60)
 
     def get_coords(self) -> list:
@@ -171,6 +180,8 @@ class Player(Creature):
     def basic_attack(self):
         if self.state in ['run_right', 'idle_right']:
             self.state = 'attack_right'
+            if self.spritesheets[self.state].get_frame() == 0:
+                pass
         elif self.state in ['run_left', 'idle_left']:
             self.state = 'attack_left'
 
@@ -187,25 +198,22 @@ class Player(Creature):
                 if tile.get_hitbox().collidepoint(self.hitbox.center):
                     return tile
 
-    def hit(self, damage: int):
-        self.current_health -= damage
-
 
 class Enemy(Creature):
-    def __init__(self, difficulty, speed, health, hitbox):
+    def __init__(self, difficulty, speed, health, damage, hitbox):
         """
         Class for all the enemies in the game
         Inherits from Creature class
         :param difficulty: Scalar to increase class difficulty as the game continues
         :param speed: Number of pixels moved per frame
-        :param health: Hit points that the Enemy can recive before dying
+        :param health: Hit points that the Enemy can receive before dying
         :param hitbox: Pygame Rect that governs all collisions
         """
-        super().__init__(hitbox, speed)
+        super().__init__(hitbox, speed, int(health * difficulty))
         self.difficulty = difficulty
-        self.droppable = []
-        self.health = health
-        self.state = None
+        self.damage = int(damage * difficulty)
+        self.health_bar = pygame.Rect(self.hitbox.x, self.hitbox.y - 20, 50, 10)
+        self.under_bar = pygame.Rect(self.hitbox.x, self.hitbox.y - 20, 50, 10)
 
     def move(self, dest):
         """
@@ -219,7 +227,7 @@ class Enemy(Creature):
                 # Selects the nearest tile on the path to the destination other than its own tile
 
                 if astar.manhattan(self.get_tile(), dest) > 75:
-                    # Checks if the nemy is close enough to the destination to make and attack
+                    # Checks if the enemy is close enough to the destination to make and attack
                     dist_x = self.hitbox.centerx - tile.get_center('x')
                     dist_y = self.hitbox.centery - tile.get_center('y')
                     tot_dist = ((dist_x ** 2) + (dist_y ** 2)) ** 0.5
@@ -240,6 +248,11 @@ class Enemy(Creature):
 
                     system.PLAYER.hit(5)
 
+    def get_health_bar(self):
+        self.health_bar = pygame.Rect(self.hitbox.x, self.hitbox.y - 20, 50 * (self.current_health/self.max_health), 10)
+        self.under_bar = pygame.Rect(self.hitbox.x, self.hitbox.y - 20, 50, 10)
+        return self.under_bar, self.health_bar
+
 
 class Slime(Enemy):
     def __init__(self, x, y, difficulty):
@@ -249,7 +262,7 @@ class Slime(Enemy):
         :param y: Starting y coord
         :param difficulty: Starting difficulty
         """
-        super().__init__(difficulty, 5, 10, pygame.Rect(x, y, 50, 30))
+        super().__init__(difficulty, 5, 50, 20, pygame.Rect(x, y, 50, 30))
 
         self.colour = random.choice(['Red', 'Green', 'Blue'])
 
@@ -276,4 +289,7 @@ class Slime(Enemy):
         """
         :return: The coordinates that the sprite needs to be drawn to in order for the hitbox to be centered
         """
-        return [self.hitbox.x - 45, self.hitbox.y - 100]
+        if self.state == 'move_right':
+            return [self.hitbox.x - 35, self.hitbox.y - 100]
+        else:
+            return [self.hitbox.x - 45, self.hitbox.y - 100]

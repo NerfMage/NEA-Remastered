@@ -212,6 +212,8 @@ class Room:
             sprite = enemy.return_sprite()
             coords = enemy.get_coords()
             self.win.blit(sprite, coords)
+            pygame.draw.rect(self.win, (255, 0, 0), enemy.get_health_bar()[0])
+            pygame.draw.rect(self.win, (0, 255, 0), enemy.get_health_bar()[1])
 
         self.win.blit(system.PLAYER.return_sprite(), system.PLAYER.get_coords())
         pygame.draw.rect(self.win, (255, 0, 0), (10, 980, 400, 60))
