@@ -56,7 +56,7 @@ class Spritesheet:
         image.blit(self.sheet, (0, 0), (self.width * self.frame, 0, self.width, self.height))
         image = pygame.transform.scale_by(image, self.scale)
 
-        return image
+        return image.convert_alpha()
 
 
 class Creature:
@@ -116,17 +116,23 @@ class Player(Creature):
             return [self.hitbox.x - 110, self.hitbox.y - 110]
 
     def move(self, key):
-        if key[pygame.K_w] and self.hitbox.y > 0:
+        if key[pygame.K_w] and rooms.get_up(self.get_tile()) is not None\
+                and not rooms.get_up(self.get_tile()).return_occupied():
             self.hitbox.y -= self.speed
-        if key[pygame.K_s] and self.hitbox.y < 950:
+        if key[pygame.K_s] and rooms.get_down(self.get_tile()) is not None\
+                and not rooms.get_down(self.get_tile()).return_occupied():
             self.hitbox.y += self.speed
 
-        if key[pygame.K_a] and self.hitbox.x > 30:
-            self.hitbox.x -= self.speed
+        if key[pygame.K_a]:
             self.state = 'run_left'
-        if key[pygame.K_d] and self.hitbox.x < 1620:
-            self.hitbox.x += self.speed
+            if rooms.get_left(self.get_tile()) is not None\
+                and not rooms.get_left(self.get_tile()).return_occupied():
+                self.hitbox.x -= self.speed
+        if key[pygame.K_d]:
             self.state = 'run_right'
+            if rooms.get_right(self.get_tile()) is not None\
+                and not rooms.get_right(self.get_tile()).return_occupied():
+                self.hitbox.x += self.speed
 
         if isinstance(self.get_tile(), rooms.Trap):
             self.get_tile().activate()
@@ -163,18 +169,19 @@ class Enemy(Creature):
         :param dest: The target Tile
         :return: None
         """
-        if len(astar.astar(self.get_tile(), dest)) > 1:
-            tile = astar.astar(self.get_tile(), dest)[-2]
-            # Selects the nearest tile on the path to the destination other than its own tile
+        if self.get_tile() is not None:
+            if len(astar.astar(self.get_tile(), dest)) > 1:
+                tile = astar.astar(self.get_tile(), dest)[-2]
+                # Selects the nearest tile on the path to the destination other than its own tile
 
-            if astar.manhattan(self.get_tile(), dest) > 75:
-                # Checks if the nemy is close enough to the destination to make and attack
-                dist_x = self.hitbox.centerx - tile.get_center('x')
-                dist_y = self.hitbox.centery - tile.get_center('y')
-                tot_dist = ((dist_x ** 2) + (dist_y ** 2)) ** 0.5
-                scale_factor = self.speed / tot_dist
-                self.hitbox.x -= dist_x * scale_factor
-                self.hitbox.y -= dist_y * scale_factor
+                if astar.manhattan(self.get_tile(), dest) > 75:
+                    # Checks if the nemy is close enough to the destination to make and attack
+                    dist_x = self.hitbox.centerx - tile.get_center('x')
+                    dist_y = self.hitbox.centery - tile.get_center('y')
+                    tot_dist = ((dist_x ** 2) + (dist_y ** 2)) ** 0.5
+                    scale_factor = self.speed / tot_dist
+                    self.hitbox.x -= dist_x * scale_factor
+                    self.hitbox.y -= dist_y * scale_factor
 
 
 class Slime(Enemy):

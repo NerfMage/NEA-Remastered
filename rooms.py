@@ -19,11 +19,39 @@ def get_surrounding(tile) -> list:
 
     for i in range(-1, 2):
         for j in range(-1, 2):
-            if 23 > (column + i) >= 0 and 14 > (row + j) >= 0:
+            if 23 >= (column + i) >= 0 and 14 >= (row + j) >= 0:
                 if TILES[column + i][row + j] != tile and not tile.return_occupied():
                     surrounding.append(TILES[column + i][row + j])
 
     return surrounding
+
+
+def get_left(tile):
+    if tile.get_column() > 0:
+        return TILES[tile.get_column() - 1][tile.get_row()]
+    else:
+        return None
+
+
+def get_right(tile):
+    if tile.get_column() < 23:
+        return TILES[tile.get_column() + 1][tile.get_row()]
+    else:
+        return None
+
+
+def get_up(tile):
+    if tile.get_row() > 0:
+        return TILES[tile.get_column()][tile.get_row()-1]
+    else:
+        return None
+
+
+def get_down(tile):
+    if tile.get_row() < 14:
+        return TILES[tile.get_column()][tile.get_row() + 1]
+    else:
+        return None
 
 
 class Tile:
@@ -135,8 +163,6 @@ class Room:
                 else:
                     pygame.draw.rect(self.win, (255, 0, 0), tile.get_hitbox(), 1)
 
-        pygame.draw.rect(self.win, (0, 0, 255), TILES[10][10].get_hitbox())
-
     def generate(self):
         """
         Generates the tileset of obstacles and traps then generates enemies
@@ -181,8 +207,6 @@ class Room:
         """
         for enemy in self.enemies:
             enemy.move(self.player.get_tile())
-            # for tile in astar.astar(enemy.get_tile(), TILES[10][10]):
-            #     pygame.draw.rect(self.win, (50, 50, 50), tile.get_hitbox())
             sprite = enemy.return_sprite()
             coords = enemy.get_coords()
             self.win.blit(sprite, coords)
@@ -196,11 +220,12 @@ class Room:
         """
         for enemy in self.enemies:
             pygame.draw.rect(self.win, (0, 255, 0), enemy.get_hitbox())
+            for tile in astar.astar(enemy.get_tile(), self.player.get_tile()):
+                pygame.draw.rect(self.win, (50, 50, 50), tile.get_hitbox())
 
     def draw_player_hitbox(self):
         """
         Debugging method that draws player hitbox
         :return: None
         """
-        pygame.draw.rect(self.win, (0, 0, 255), self.player.get_hitbox())
         pygame.draw.rect(self.win, (0, 0, 255), self.player.get_tile().get_hitbox())

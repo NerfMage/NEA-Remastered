@@ -28,7 +28,7 @@ def manhattan(start, end) -> int:
 
 
 def astar(start, end) -> list:
-    currentNode = Node(None, [start.get_column(), start.get_row()], 999)
+    currentNode = Node(None, start.get_map_coords(), 999)
     openList = [currentNode]
     closedList = []
 
@@ -37,12 +37,17 @@ def astar(start, end) -> list:
         closedList.append(currentNode.get_coords())
 
         for tile in rooms.get_surrounding(currentNode.get_tile()):
-            if tile.get_map_coords() not in closedList and not any(tile.get_map_coords() == node.get_coords() for node in openList):
-                openList.append(Node(currentNode, tile.get_map_coords(), manhattan(end, tile)))
+            if tile.get_map_coords() not in closedList:
+                if not any(tile.get_map_coords() == node.get_coords() for node in openList):
+                    # Checks if the tile hasnota lreadybeen asigned a node
+                    openList.append(Node(currentNode, tile.get_map_coords(), manhattan(end, tile)))
+
+        if len(openList) == 0:
+            return [start]
 
         currentNode = openList[-1]
         for node in openList:
-            if node.get_h() <= currentNode.get_h():
+            if node.get_h() < currentNode.get_h():
                 currentNode = node
 
     path = [end]
