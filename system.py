@@ -17,7 +17,7 @@ class System:
         self.clock = pygame.time.Clock()
         # Loads the background image sprite and scales it to fit screen resolution
         self.bg = pygame.transform.scale(pygame.image.load(
-            os.path.join('Sprites', 'Environment', 'Floor.png')), [1680, 1050])
+            os.path.join('Sprites', 'Environment', 'Floor.png')).convert_alpha(), [1680, 1050])
 
         self.current_room = Room(1)
         self.current_room.generate()

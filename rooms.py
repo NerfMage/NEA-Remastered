@@ -57,18 +57,20 @@ def get_down(tile):
 
 
 class Tile:
-    def __init__(self, x, y, column, row):
+    def __init__(self, x, y, column, row, room):
         """
         A class for each 70x70px tile in the level
         :param x: The x-coordinate
         :param y: The y-coordinate
         :param column: Its column number
         :param row: Its row number
+        :param room: The room the tile is part of
         """
         self.x = x
         self.y = y
         self.column = column
         self.row = row
+        self.room = room
         self.hitbox = pygame.Rect(x, y, 70, 70)
         self.occupied = False
         self.sprite = None
@@ -100,12 +102,19 @@ class Tile:
     def get_map_coords(self):
         return [self.column, self.row]
 
+    def get_enemies(self):
+        temp = []
+        for enemy in self.room.get_enemies():
+            if self.hitbox.colliderect(enemy.get_hitbox()):
+                temp.append(enemy)
+        return temp
+
     def __str__(self):
         return str(self.row) + str(self.column)
 
 
 class Barrel(Tile):
-    def __init__(self, x, y, row,  column):
+    def __init__(self, x, y, row,  column,  room):
         """
         Class for all tiles in the map containing a Barrel obstacles
         :param x: x-coord
@@ -113,14 +122,14 @@ class Barrel(Tile):
         :param row: Row in the tile map
         :param column: Column in the tile map
         """
-        super().__init__(x, y, row, column)
+        super().__init__(x, y, row, column, room)
         self.occupied = True
         self.sprite = pygame.transform.scale_by(
             pygame.image.load(os.path.join('Sprites', 'Environment', 'Obstacles', 'Barrel.png')), 2)
 
 
 class Trap(Tile):
-    def __init__(self, x, y, row, column):
+    def __init__(self, x, y, row, column, room):
         """
         Class for all tiles in the map containing a trap
         :param x: x-coord
@@ -128,7 +137,7 @@ class Trap(Tile):
         :param row: Row in the tile map
         :param column: Column in the tile map
         """
-        super().__init__(x, y, row, column)
+        super().__init__(x, y, row, column, room)
         self.spritesheet = creatures.Spritesheet(pygame.image.load(
             os.path.join('Sprites', 'Environment', 'Obstacles', 'Bear_Trap.png')), 32, 32, 4, 2)
         self.sprite = self.spritesheet.get_image()
@@ -176,11 +185,11 @@ class Room:
             for y in range(15):
                 if [x, y] in map.OBSTACLE_MAP:
                     if random.randint(1, 10) == 1:
-                        tile = Trap(x * 70, y * 70, x, y)
+                        tile = Trap(x * 70, y * 70, x, y, self)
                     else:
-                        tile = Barrel(x * 70, y * 70, x, y)
+                        tile = Barrel(x * 70, y * 70, x, y, self)
                 else:
-                    tile = Tile(x * 70, y * 70, x, y)
+                    tile = Tile(x * 70, y * 70, x, y, self)
                 column.append(tile)
             TILES.append(column)
 
@@ -208,12 +217,13 @@ class Room:
         :return: None
         """
         for enemy in self.enemies:
-            enemy.move(system.PLAYER.get_tile())
-            sprite = enemy.return_sprite()
-            coords = enemy.get_coords()
-            self.win.blit(sprite, coords)
-            pygame.draw.rect(self.win, (255, 0, 0), enemy.get_health_bar()[0])
-            pygame.draw.rect(self.win, (0, 255, 0), enemy.get_health_bar()[1])
+            if not enemy.is_dead():
+                enemy.move(system.PLAYER.get_tile())
+                sprite = enemy.return_sprite()
+                coords = enemy.get_coords()
+                self.win.blit(sprite, coords)
+                pygame.draw.rect(self.win, (255, 0, 0), enemy.get_health_bar()[0])
+                pygame.draw.rect(self.win, (0, 255, 0), enemy.get_health_bar()[1])
 
         self.win.blit(system.PLAYER.return_sprite(), system.PLAYER.get_coords())
         pygame.draw.rect(self.win, (255, 0, 0), (10, 980, 400, 60))
@@ -235,3 +245,10 @@ class Room:
         :return: None
         """
         pygame.draw.rect(self.win, (0, 0, 255), system.PLAYER.get_tile().get_hitbox())
+
+    def get_enemies(self):
+        temp = []
+        for enemy in self.enemies:
+            if not enemy.is_dead():
+                temp.append(enemy)
+        return temp

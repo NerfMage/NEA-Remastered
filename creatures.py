@@ -180,10 +180,12 @@ class Player(Creature):
     def basic_attack(self):
         if self.state in ['run_right', 'idle_right']:
             self.state = 'attack_right'
-            if self.spritesheets[self.state].get_frame() == 0:
-                pass
+            for enemy in rooms.get_right(self.get_tile()).get_enemies():
+                enemy.hit(25)
         elif self.state in ['run_left', 'idle_left']:
             self.state = 'attack_left'
+            for enemy in rooms.get_left(self.get_tile()).get_enemies():
+                enemy.hit(25)
 
     def get_healthbar(self):
         self.health_bar = self.health_bar = pygame.Rect(10, 980, 400 * (self.current_health/self.max_health), 60)
