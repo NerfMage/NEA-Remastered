@@ -22,7 +22,7 @@ def Factory(enemy, *args):
 
 
 class Spritesheet:
-    def __init__(self, sheet, width, height, length, scale):
+    def __init__(self, sheet, width, height, length, scale, speed, direction):
         """
         A class to animate spritesheets
         :param sheet: The image file of the sheet
@@ -30,12 +30,16 @@ class Spritesheet:
         :param height: The height of each frame
         :param length: The number of frame on the sheet
         :param scale: The scale factor for the sprite to be enlarged by
+        :param speed: Scales down the speed of the animation to make it more visible
+        :param direction: States whether the sprite is facing left or right
         """
         self.sheet = sheet
         self.width = width
         self.height = height
         self.length = length
         self.scale = scale
+        self.speed = speed
+        self.direction = direction
         self.frame = 0
 
     def update(self):
@@ -45,7 +49,7 @@ class Spritesheet:
         """
         self.frame += 1
         # Increments frame counter by 1
-        if self.frame == self.length:
+        if self.frame == (self.length * self.speed):
             # Resets when reaching the end of the spritesheet strip
             self.frame = 0
 
@@ -54,13 +58,18 @@ class Spritesheet:
         :return: Current frame from Spritesheet as an image
         """
         image = pygame.Surface((self.width, self.height), pygame.SRCALPHA).convert_alpha()
-        image.blit(self.sheet, (0, 0), (self.width * self.frame, 0, self.width, self.height))
+        image.blit(self.sheet, (0, 0), (self.width * (self.frame//self.speed), 0, self.width, self.height))
         image = pygame.transform.scale_by(image, self.scale)
+        if self.direction == 'l':
+            image = pygame.transform.flip(image, True, False)
 
         return image.convert_alpha()
 
     def get_frame(self):
         return self.frame
+
+    def get_len(self):
+        return self.frame * self.speed
 
 
 class Creature:
@@ -112,31 +121,38 @@ class Player(Creature):
         # Dict containing all the spritesheets for the Player's animations
         self.spritesheets = {
             'idle_right': Spritesheet(pygame.image.load(os.path.join(
-                'Sprites', 'Player', 'Idle_Right.png')), 128, 128, 6, 1.5),
+                'Sprites', 'Player', 'Idle.png')), 128, 128, 6, 1.5, 1, 'r'),
             'idle_left': Spritesheet(pygame.image.load(os.path.join(
-                'Sprites', 'Player', 'Idle_Left.png')), 128, 128, 6, 1.5),
+                'Sprites', 'Player', 'Idle.png')), 128, 128, 6, 1.5, 1, 'l'),
             'run_right': Spritesheet(pygame.image.load(os.path.join(
-                'Sprites', 'Player', 'Run_Right.png')), 128, 128, 8, 1.5),
+                'Sprites', 'Player', 'Run.png')), 128, 128, 8, 1.5, 1, 'r'),
             'run_left': Spritesheet(pygame.image.load(os.path.join(
-                'Sprites', 'Player', 'Run_Left.png')), 128, 128, 8, 1.5),
+                'Sprites', 'Player', 'Run.png')), 128, 128, 8, 1.5, 1, 'l'),
             'attack_right': Spritesheet(pygame.image.load(os.path.join(
-                'Sprites', 'Player', 'Attack_Right.png')), 128, 128, 4, 1.5),
+                'Sprites', 'Player', 'Attack.png')), 128, 128, 4, 1.5, 2, 'r'),
             'attack_left': Spritesheet(pygame.image.load(os.path.join(
-                'Sprites', 'Player', 'Attack_Left.png')), 128, 128, 4, 1.5),
+                'Sprites', 'Player', 'Attack.png')), 128, 128, 4, 1.5, 2, 'l'),
+            'secondary_right': Spritesheet(pygame.image.load(os.path.join(
+                'Sprites', 'Player', 'Secondary.png')), 128, 128, 5, 1.5, 2, 'r'),
+            'secondary_left': Spritesheet(pygame.image.load(os.path.join(
+                'Sprites', 'Player', 'Secondary.png')), 128, 128, 5, 1.5, 2, 'l'),
         }
         self.health_bar = pygame.Rect(10, 980, 400, 60)
+        self.cooldowns = {
+            'secondary': [0, 60]
+        }
 
     def get_coords(self) -> list:
         """
         :return: The coordinates that the sprite needs to be drawn to in order for the hitbox to be centered
         """
-        if self.state in ['run_right', 'idle_right', 'attack_right']:
+        if self.state in ['run_right', 'idle_right', 'attack_right', 'secondary_right']:
             return [self.hitbox.x - 40, self.hitbox.y - 110]
-        elif self.state in ['run_left', 'idle_left', 'attack_left']:
+        elif self.state in ['run_left', 'idle_left', 'attack_left', 'secondary_left']:
             return [self.hitbox.x - 110, self.hitbox.y - 110]
 
     def move(self, key):
-        if self.state not in ['attack_left', 'attack_right']:
+        if self.state not in ['attack_left', 'attack_right', 'secondary_left', 'secondary_right']:
             if key[pygame.K_w] and rooms.get_up(self.get_tile()) is not None \
                     and not rooms.get_up(self.get_tile()).return_occupied():
                 self.hitbox.y -= self.speed
@@ -154,12 +170,18 @@ class Player(Creature):
 
             if key[pygame.K_a]:
                 self.state = 'run_left'
-                if rooms.get_left(self.get_tile()) is not None and not rooms.get_left(self.get_tile()).return_occupied():
+                if rooms.get_left(self.get_tile()) is not None and \
+                        not rooms.get_left(self.get_tile()).return_occupied():
                     self.hitbox.x -= self.speed
             if key[pygame.K_d]:
                 self.state = 'run_right'
-                if rooms.get_right(self.get_tile()) is not None and not rooms.get_right(self.get_tile()).return_occupied():
+                if rooms.get_right(self.get_tile()) is not None and \
+                        not rooms.get_right(self.get_tile()).return_occupied():
                     self.hitbox.x += self.speed
+
+            if key[pygame.K_e] and self.cooldowns['secondary'][0] >= self.cooldowns['secondary'][1]:
+                self.cooldowns['secondary'][0] = 0
+                self.secondary_attack()
 
             if not any([key[pygame.K_w], key[pygame.K_a], key[pygame.K_s], key[pygame.K_d]]):
                 if self.state == 'run_right':
@@ -167,15 +189,27 @@ class Player(Creature):
                 elif self.state == 'run_left':
                     self.state = 'idle_left'
 
-        elif self.state in ['attack_left', 'attack_right'] and self.spritesheets[self.state].get_frame() == 3:
+        elif self.state in ['attack_left', 'attack_right'] and \
+                self.spritesheets[self.state].get_frame() == self.spritesheets[self.state].get_len():
             self.spritesheets[self.state].update()
             if self.state == 'attack_left':
                 self.state = 'idle_left'
             if self.state == 'attack_right':
                 self.state = 'idle_right'
 
+        elif self.state in ['secondary_left', 'secondary_right'] and \
+                self.spritesheets[self.state].get_frame() == self.spritesheets[self.state].get_len() - 1:
+            self.spritesheets[self.state].update()
+            if self.state == 'secondary_left':
+                self.state = 'idle_left'
+            if self.state == 'secondary_right':
+                self.state = 'idle_right'
+
         if isinstance(self.get_tile(), rooms.Trap):
             self.get_tile().activate()
+
+        for value in self.cooldowns.values():
+            value[0] += 1
 
     def basic_attack(self):
         if self.state in ['run_right', 'idle_right']:
@@ -186,6 +220,12 @@ class Player(Creature):
             self.state = 'attack_left'
             for enemy in rooms.get_left(self.get_tile()).get_enemies():
                 enemy.hit(25)
+
+    def secondary_attack(self):
+        if self.state in ['run_right', 'idle_right']:
+            self.state = 'secondary_right'
+        elif self.state in ['run_left', 'idle_left']:
+            self.state = 'secondary_left'
 
     def get_healthbar(self):
         self.health_bar = self.health_bar = pygame.Rect(10, 980, 400 * (self.current_health/self.max_health), 60)
@@ -271,13 +311,13 @@ class Slime(Enemy):
         # Dict containing all the spritesheets for the Slime's animations
         self.spritesheets = {
             'move_right': Spritesheet(pygame.image.load(os.path.join(
-                'Sprites', 'Enemies', 'Slime', self.colour, 'Move_Right.png')), 128, 128, 7, 1),
+                'Sprites', 'Enemies', 'Slime', self.colour, 'Move.png')), 128, 128, 7, 1, 1, 'r'),
             'move_left': Spritesheet(pygame.image.load(os.path.join(
-                'Sprites', 'Enemies', 'Slime', self.colour, 'Move_Left.png')), 128, 128, 7, 1),
+                'Sprites', 'Enemies', 'Slime', self.colour, 'Move.png')), 128, 128, 7, 1, 1, 'l'),
             'attack_right': Spritesheet(pygame.image.load(os.path.join(
-                'Sprites', 'Enemies', 'Slime', self.colour, 'Attack_Right.png')), 128, 128, 4, 1),
+                'Sprites', 'Enemies', 'Slime', self.colour, 'Attack.png')), 128, 128, 4, 1, 1, 'r'),
             'attack_left': Spritesheet(pygame.image.load(os.path.join(
-                'Sprites', 'Enemies', 'Slime', self.colour, 'Attack_Left.png')), 128, 128, 4, 1),
+                'Sprites', 'Enemies', 'Slime', self.colour, 'Attack.png')), 128, 128, 4, 1, 1, 'l'),
         }
 
         # Stats

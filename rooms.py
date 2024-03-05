@@ -139,7 +139,7 @@ class Trap(Tile):
         """
         super().__init__(x, y, row, column, room)
         self.spritesheet = creatures.Spritesheet(pygame.image.load(
-            os.path.join('Sprites', 'Environment', 'Obstacles', 'Bear_Trap.png')), 32, 32, 4, 2)
+            os.path.join('Sprites', 'Environment', 'Obstacles', 'Bear_Trap.png')), 32, 32, 4, 2, 1, 'r')
         self.sprite = self.spritesheet.get_image()
         self.activated = False
 
@@ -200,6 +200,10 @@ class Room:
             enemy_count += 1
             if enemy_count == 12:
                 break
+
+        print(system.PLAYER.get_tile())
+        for tile in get_surrounding(system.PLAYER.get_tile()):
+            print(tile)
 
     def draw_obstacles(self):
         """

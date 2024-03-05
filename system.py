@@ -3,7 +3,7 @@ import os
 from rooms import Room
 import creatures
 
-PLAYER = creatures.Player(840, 900)
+PLAYER = creatures.Player(70, 70)
 
 
 class System:
