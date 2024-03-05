@@ -222,10 +222,55 @@ class Player(Creature):
                 enemy.hit(25)
 
     def secondary_attack(self):
+        enemies = []
         if self.state in ['run_right', 'idle_right']:
             self.state = 'secondary_right'
+            try:
+                for enemy in rooms.get_right(self.get_tile()).get_enemies():
+                    enemies.append(enemy)
+
+                for enemy in rooms.get_down(self.get_tile()).get_enemies():
+                    enemies.append(enemy)
+
+                for enemy in rooms.get_up(self.get_tile()).get_enemies():
+                    enemies.append(enemy)
+
+                for enemy in rooms.get_up(rooms.get_right(self.get_tile())).get_enemies():
+                    if enemy not in enemies:
+                        enemies.append(enemy)
+
+                for enemy in rooms.get_down(rooms.get_right(self.get_tile())).get_enemies():
+                    if enemy not in enemies:
+                        enemies.append(enemy)
+
+            except AttributeError:
+                pass
+
         elif self.state in ['run_left', 'idle_left']:
             self.state = 'secondary_left'
+            try:
+                for enemy in rooms.get_left(self.get_tile()).get_enemies():
+                    enemies.append(enemy)
+
+                for enemy in rooms.get_down(self.get_tile()).get_enemies():
+                    enemies.append(enemy)
+
+                for enemy in rooms.get_up(self.get_tile()).get_enemies():
+                    enemies.append(enemy)
+
+                for enemy in rooms.get_up(rooms.get_left(self.get_tile())).get_enemies():
+                    if enemy not in enemies:
+                        enemies.append(enemy)
+
+                for enemy in rooms.get_down(rooms.get_left(self.get_tile())).get_enemies():
+                    if enemy not in enemies:
+                        enemies.append(enemy)
+
+            except AttributeError:
+                pass
+
+        for enemy in enemies:
+            enemy.hit(50)
 
     def get_healthbar(self):
         self.health_bar = self.health_bar = pygame.Rect(10, 980, 400 * (self.current_health/self.max_health), 60)

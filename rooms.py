@@ -201,10 +201,6 @@ class Room:
             if enemy_count == 12:
                 break
 
-        print(system.PLAYER.get_tile())
-        for tile in get_surrounding(system.PLAYER.get_tile()):
-            print(tile)
-
     def draw_obstacles(self):
         """
         Method that draws all obstacle sprites to their respective locations
