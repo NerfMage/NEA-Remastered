@@ -137,14 +137,14 @@ class Player(Creature):
             'secondary_left': Spritesheet(pygame.image.load(os.path.join(
                 'Sprites', 'Player', 'Secondary.png')), 128, 128, 5, 1.5, 2, 'l'),
             'dash_right': Spritesheet(pygame.image.load(os.path.join(
-                'Sprites', 'Player', 'Dash.png')), 128, 128, 5, 1.5, 1, 'r'),
+                'Sprites', 'Player', 'Dash.png')), 128, 128, 4, 1.5, 2, 'r'),
             'dash_left': Spritesheet(pygame.image.load(os.path.join(
-                'Sprites', 'Player', 'Dash.png')), 128, 128, 5, 1.5, 1, 'l'),
+                'Sprites', 'Player', 'Dash.png')), 128, 128, 4, 1.5, 2, 'l'),
         }
         self.health_bar = pygame.Rect(10, 980, 400, 60)
         self.cooldowns = {
-            'secondary': [60, 60],
-            'dash': [30, 30],
+            'secondary': [30, 30],
+            'dash': [15, 15],
         }
 
     def get_coords(self) -> list:
@@ -189,7 +189,7 @@ class Player(Creature):
                 self.secondary_attack()
 
             if key[pygame.K_SPACE] and self.cooldowns['dash'][0] >= self.cooldowns['dash'][1]:
-                self.cooldowns['secondary'][0] = 0
+                self.cooldowns['dash'][0] = 0
                 if key[pygame.K_a]:
                     self.state = 'dash_left'
                 elif key[pygame.K_d]:
@@ -221,9 +221,11 @@ class Player(Creature):
                 self.spritesheets[self.state].get_frame() == self.spritesheets[self.state].get_len():
             self.spritesheets[self.state].update()
             if self.state == 'dash_left':
-                self.state = 'idle_left'
+                self.state = 'run_left'
             if self.state == 'dash_right':
-                self.state = 'idle_right'
+                self.state = 'run_right'
+        else:
+            self.dash()
 
         if isinstance(self.get_tile(), rooms.Trap):
             self.get_tile().activate()
@@ -312,9 +314,26 @@ class Player(Creature):
         for enemy in enemies:
             enemy.hit(50)
 
+    def dash(self):
+        if self.state == 'dash_left':
+            if rooms.get_left(self.get_tile()) is not None and \
+                    not rooms.get_left(self.get_tile()).return_occupied():
+                self.hitbox.x -= 3 * self.speed
+
+        if self.state == 'dash_right':
+            if rooms.get_right(self.get_tile()) is not None and \
+                    not rooms.get_right(self.get_tile()).return_occupied():
+                self.hitbox.x += 3 * self.speed
+
+        for enemy in self.get_tile().get_enemies():
+            enemy.hit(5)
+
     def get_healthbar(self):
         self.health_bar = self.health_bar = pygame.Rect(10, 980, 400 * (self.current_health/self.max_health), 60)
         return self.health_bar
+
+    def get_cooldowns(self):
+        return self.cooldowns
 
     def get_tile(self):
         """
