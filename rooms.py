@@ -226,8 +226,16 @@ class Room:
                 pygame.draw.rect(self.win, (0, 255, 0), enemy.get_health_bar()[1])
 
         self.win.blit(system.PLAYER.return_sprite(), system.PLAYER.get_coords())
+        # Draws the Healthbar
+        pygame.draw.rect(self.win, (255, 255, 255), (7, 977,  406, 66))
         pygame.draw.rect(self.win, (255, 0, 0), (10, 980, 400, 60))
         pygame.draw.rect(self.win, (0, 255, 0), system.PLAYER.get_healthbar())
+        # Draws cooldown boxes
+        for i, values in enumerate(system.PLAYER.get_cooldowns().values()):
+            pygame.draw.circle(self.win, (255, 255, 255), (1600 - 90*i, 990), 40)
+            if values[0] >= values[1]:
+                pygame.draw.circle(self.win, (0, 0, 255), (1600 - 90 * i, 990), 35)
+
 
     def draw_enemy_hitboxes(self):
         """
