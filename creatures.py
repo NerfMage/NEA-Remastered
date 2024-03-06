@@ -136,23 +136,28 @@ class Player(Creature):
                 'Sprites', 'Player', 'Secondary.png')), 128, 128, 5, 1.5, 2, 'r'),
             'secondary_left': Spritesheet(pygame.image.load(os.path.join(
                 'Sprites', 'Player', 'Secondary.png')), 128, 128, 5, 1.5, 2, 'l'),
+            'dash_right': Spritesheet(pygame.image.load(os.path.join(
+                'Sprites', 'Player', 'Dash.png')), 128, 128, 5, 1.5, 1, 'r'),
+            'dash_left': Spritesheet(pygame.image.load(os.path.join(
+                'Sprites', 'Player', 'Dash.png')), 128, 128, 5, 1.5, 1, 'l'),
         }
         self.health_bar = pygame.Rect(10, 980, 400, 60)
         self.cooldowns = {
-            'secondary': [0, 60]
+            'secondary': [60, 60],
+            'dash': [30, 30],
         }
 
     def get_coords(self) -> list:
         """
         :return: The coordinates that the sprite needs to be drawn to in order for the hitbox to be centered
         """
-        if self.state in ['run_right', 'idle_right', 'attack_right', 'secondary_right']:
+        if self.state in ['run_right', 'idle_right', 'attack_right', 'secondary_right', 'dash_right']:
             return [self.hitbox.x - 40, self.hitbox.y - 110]
-        elif self.state in ['run_left', 'idle_left', 'attack_left', 'secondary_left']:
+        elif self.state in ['run_left', 'idle_left', 'attack_left', 'secondary_left', 'dash_left']:
             return [self.hitbox.x - 110, self.hitbox.y - 110]
 
     def move(self, key):
-        if self.state not in ['attack_left', 'attack_right', 'secondary_left', 'secondary_right']:
+        if self.state in ['idle_left', 'idle_right', 'run_left', 'run_right']:
             if key[pygame.K_w] and rooms.get_up(self.get_tile()) is not None \
                     and not rooms.get_up(self.get_tile()).return_occupied():
                 self.hitbox.y -= self.speed
@@ -183,13 +188,20 @@ class Player(Creature):
                 self.cooldowns['secondary'][0] = 0
                 self.secondary_attack()
 
+            if key[pygame.K_SPACE] and self.cooldowns['dash'][0] >= self.cooldowns['dash'][1]:
+                self.cooldowns['secondary'][0] = 0
+                if key[pygame.K_a]:
+                    self.state = 'dash_left'
+                elif key[pygame.K_d]:
+                    self.state = 'dash_right'
+
             if not any([key[pygame.K_w], key[pygame.K_a], key[pygame.K_s], key[pygame.K_d]]):
                 if self.state == 'run_right':
                     self.state = 'idle_right'
                 elif self.state == 'run_left':
                     self.state = 'idle_left'
 
-        elif self.state in ['attack_left', 'attack_right'] and \
+        if self.state in ['attack_left', 'attack_right'] and \
                 self.spritesheets[self.state].get_frame() == self.spritesheets[self.state].get_len():
             self.spritesheets[self.state].update()
             if self.state == 'attack_left':
@@ -197,12 +209,20 @@ class Player(Creature):
             if self.state == 'attack_right':
                 self.state = 'idle_right'
 
-        elif self.state in ['secondary_left', 'secondary_right'] and \
-                self.spritesheets[self.state].get_frame() == self.spritesheets[self.state].get_len() - 1:
+        if self.state in ['secondary_left', 'secondary_right'] and \
+                self.spritesheets[self.state].get_frame() == self.spritesheets[self.state].get_len():
             self.spritesheets[self.state].update()
             if self.state == 'secondary_left':
                 self.state = 'idle_left'
             if self.state == 'secondary_right':
+                self.state = 'idle_right'
+
+        if self.state in ['dash_left', 'dash_right'] and \
+                self.spritesheets[self.state].get_frame() == self.spritesheets[self.state].get_len():
+            self.spritesheets[self.state].update()
+            if self.state == 'dash_left':
+                self.state = 'idle_left'
+            if self.state == 'dash_right':
                 self.state = 'idle_right'
 
         if isinstance(self.get_tile(), rooms.Trap):
@@ -212,20 +232,37 @@ class Player(Creature):
             value[0] += 1
 
     def basic_attack(self):
+        enemies = []
+
+        for enemy in self.get_tile().get_enemies():
+            enemies.append(enemy)
+
         if self.state in ['run_right', 'idle_right']:
             self.state = 'attack_right'
-            for enemy in rooms.get_right(self.get_tile()).get_enemies():
-                enemy.hit(25)
+            try:
+                for enemy in rooms.get_right(self.get_tile()).get_enemies():
+                    enemies.append(enemy)
+            except AttributeError:
+                pass
         elif self.state in ['run_left', 'idle_left']:
             self.state = 'attack_left'
-            for enemy in rooms.get_left(self.get_tile()).get_enemies():
-                enemy.hit(25)
+            try:
+                for enemy in rooms.get_left(self.get_tile()).get_enemies():
+                    enemies.append(enemy)
+            except AttributeError:
+                pass
+
+        for enemy in enemies:
+            enemy.hit(25)
 
     def secondary_attack(self):
         enemies = []
         if self.state in ['run_right', 'idle_right']:
             self.state = 'secondary_right'
             try:
+                for enemy in self.get_tile().get_enemies():
+                    enemies.append(enemy)
+
                 for enemy in rooms.get_right(self.get_tile()).get_enemies():
                     enemies.append(enemy)
 
@@ -249,6 +286,9 @@ class Player(Creature):
         elif self.state in ['run_left', 'idle_left']:
             self.state = 'secondary_left'
             try:
+                for enemy in self.get_tile().get_enemies():
+                    enemies.append(enemy)
+
                 for enemy in rooms.get_left(self.get_tile()).get_enemies():
                     enemies.append(enemy)
 
