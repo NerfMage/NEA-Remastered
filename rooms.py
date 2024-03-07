@@ -5,8 +5,12 @@ import system
 import random
 import pygame
 import os
+import items
+
+pygame.font.init()
 
 TILES = []
+FONT = pygame.font.Font('freesansbold.ttf', 40)
 
 
 def get_surrounding(tile) -> list:
@@ -72,6 +76,7 @@ class Tile:
         self.row = row
         self.room = room
         self.hitbox = pygame.Rect(x, y, 70, 70)
+        self.loot = []
         self.occupied = False
         self.sprite = None
 
@@ -108,6 +113,19 @@ class Tile:
             if self.hitbox.colliderect(enemy.get_hitbox()):
                 temp.append(enemy)
         return temp
+
+    def add_loot(self, item):
+        self.loot.append(item)
+
+    def get_loot(self):
+        return self.loot
+
+    def take_loot(self):
+        for item in self.loot:
+            if isinstance(item, items.Gold):
+                system.PLAYER.add_gold(item.get_value())
+                self.loot.remove(item)
+                del item
 
     def __str__(self):
         return str(self.row) + str(self.column)
@@ -211,11 +229,19 @@ class Room:
                 if tile.return_sprite() is not None:
                     self.win.blit(tile.return_sprite(), tile.get_coords())
 
+                for item in tile.get_loot():
+                    if isinstance(item, items.Gold):
+                        pygame.draw.circle(self.win, (255, 215, 0),
+                                           (item.get_coords()[0], item.get_coords()[1]), 10)
+
     def draw_creatures(self):
         """
         Method that draws all creatures in the level to their respective locations
         :return: None
         """
+
+        self.win.blit(system.PLAYER.return_sprite(), system.PLAYER.get_coords())
+
         for enemy in self.enemies:
             if not enemy.is_dead():
                 enemy.move(system.PLAYER.get_tile())
@@ -225,7 +251,6 @@ class Room:
                 pygame.draw.rect(self.win, (255, 0, 0), enemy.get_health_bar()[0])
                 pygame.draw.rect(self.win, (0, 255, 0), enemy.get_health_bar()[1])
 
-        self.win.blit(system.PLAYER.return_sprite(), system.PLAYER.get_coords())
         # Draws the Healthbar
         pygame.draw.rect(self.win, (255, 255, 255), (7, 977,  406, 66))
         pygame.draw.rect(self.win, (255, 0, 0), (10, 980, 400, 60))
@@ -235,6 +260,11 @@ class Room:
             pygame.draw.circle(self.win, (255, 255, 255), (1600 - 90*i, 990), 40)
             if values[0] >= values[1]:
                 pygame.draw.circle(self.win, (0, 0, 255), (1600 - 90 * i, 990), 35)
+
+        # Draws gold count
+        gold_text = FONT.render(str(system.PLAYER.get_gold()), True, (255, 215, 0))
+        pygame.draw.circle(self.win, (255, 215, 0), (1550, 50), 20)
+        self.win.blit(gold_text, (1600, 33))
 
     def draw_enemy_hitboxes(self):
         """

@@ -4,6 +4,7 @@ import random
 import rooms
 import astar
 import system
+import items
 
 
 def Factory(enemy, *args):
@@ -142,6 +143,7 @@ class Player(Creature):
                 'Sprites', 'Player', 'Dash.png')), 128, 128, 4, 1.5, 2, 'l'),
         }
         self.health_bar = pygame.Rect(10, 980, 400, 60)
+        self.gold = 0
         self.cooldowns = {
             'secondary': [30, 30],
             'dash': [15, 15],
@@ -155,6 +157,9 @@ class Player(Creature):
             return [self.hitbox.x - 40, self.hitbox.y - 110]
         elif self.state in ['run_left', 'idle_left', 'attack_left', 'secondary_left', 'dash_left']:
             return [self.hitbox.x - 110, self.hitbox.y - 110]
+
+    def get_gold(self):
+        return self.gold
 
     def move(self, key):
         if self.state in ['idle_left', 'idle_right', 'run_left', 'run_right']:
@@ -234,6 +239,8 @@ class Player(Creature):
 
         if isinstance(self.get_tile(), rooms.Trap):
             self.get_tile().activate()
+
+        self.get_tile().take_loot()
 
         for value in self.cooldowns.values():
             value[0] += 1
@@ -338,6 +345,9 @@ class Player(Creature):
     def get_cooldowns(self):
         return self.cooldowns
 
+    def add_gold(self, value: int):
+        self.gold += value
+
     def get_tile(self):
         """
         :return: the tile that the Creature is currently occupying
@@ -349,7 +359,7 @@ class Player(Creature):
 
 
 class Enemy(Creature):
-    def __init__(self, difficulty, speed, health, damage, hitbox):
+    def __init__(self, difficulty, speed, health, damage, hitbox, droppable):
         """
         Class for all the enemies in the game
         Inherits from Creature class
@@ -357,10 +367,12 @@ class Enemy(Creature):
         :param speed: Number of pixels moved per frame
         :param health: Hit points that the Enemy can receive before dying
         :param hitbox: Pygame Rect that governs all collisions
+        :param droppable: All the items the enemy can drop upon death
         """
         super().__init__(hitbox, speed, int(health * difficulty))
         self.difficulty = difficulty
         self.damage = int(damage * difficulty)
+        self.droppable = droppable
         self.health_bar = pygame.Rect(self.hitbox.x, self.hitbox.y - 20, 50, 10)
         self.under_bar = pygame.Rect(self.hitbox.x, self.hitbox.y - 20, 50, 10)
 
@@ -396,7 +408,7 @@ class Enemy(Creature):
                         self.state = 'attack_right'
 
         if self.spritesheets[self.state].get_frame() == self.spritesheets[self.state].get_len() \
-                and astar.manhattan(self.get_tile(), dest) < 75:
+                and astar.manhattan(self.get_tile(), system.PLAYER.get_tile()) < 75:
             system.PLAYER.hit(5)
 
     def get_health_bar(self):
@@ -404,6 +416,11 @@ class Enemy(Creature):
                                       10)
         self.under_bar = pygame.Rect(self.hitbox.x, self.hitbox.y - 20, 50, 10)
         return self.under_bar, self.health_bar
+
+    def hit(self, damage:int):
+        self.current_health -= damage
+        if self.is_dead():
+            self.get_tile().add_loot(items.Gold(5, self.hitbox.x, self.hitbox.y))
 
 
 class Slime(Enemy):
@@ -414,7 +431,7 @@ class Slime(Enemy):
         :param y: Starting y coord
         :param difficulty: Starting difficulty
         """
-        super().__init__(difficulty, 5, 50, 20, pygame.Rect(x, y, 50, 30))
+        super().__init__(difficulty, 5, 50, 20, pygame.Rect(x, y, 50, 30), [])
 
         self.colour = random.choice(['Red', 'Green', 'Blue'])
 
