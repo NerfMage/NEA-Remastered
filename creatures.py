@@ -58,7 +58,7 @@ class Spritesheet:
         :return: Current frame from Spritesheet as an image
         """
         image = pygame.Surface((self.width, self.height), pygame.SRCALPHA).convert_alpha()
-        image.blit(self.sheet, (0, 0), (self.width * (self.frame//self.speed), 0, self.width, self.height))
+        image.blit(self.sheet, (0, 0), (self.width * (self.frame // self.speed), 0, self.width, self.height))
         image = pygame.transform.scale_by(image, self.scale)
         if self.direction == 'l':
             image = pygame.transform.flip(image, True, False)
@@ -185,15 +185,19 @@ class Player(Creature):
                     self.hitbox.x += self.speed
 
             if key[pygame.K_e] and self.cooldowns['secondary'][0] >= self.cooldowns['secondary'][1]:
+                if self.state in ['idle_right', 'run_right']:
+                    self.state = 'secondary_right'
+                if self.state in ['idle_left', 'run_left']:
+                    self.state = 'secondary_left'
                 self.cooldowns['secondary'][0] = 0
-                self.secondary_attack()
 
             if key[pygame.K_SPACE] and self.cooldowns['dash'][0] >= self.cooldowns['dash'][1]:
-                self.cooldowns['dash'][0] = 0
                 if key[pygame.K_a]:
                     self.state = 'dash_left'
+                    self.cooldowns['dash'][0] = 0
                 elif key[pygame.K_d]:
                     self.state = 'dash_right'
+                    self.cooldowns['dash'][0] = 0
 
             if not any([key[pygame.K_w], key[pygame.K_a], key[pygame.K_s], key[pygame.K_d]]):
                 if self.state == 'run_right':
@@ -202,7 +206,7 @@ class Player(Creature):
                     self.state = 'idle_left'
 
         if self.state in ['attack_left', 'attack_right'] and \
-                self.spritesheets[self.state].get_frame() == self.spritesheets[self.state].get_len() - 1:
+                self.spritesheets[self.state].get_frame() == self.spritesheets[self.state].get_len():
             self.spritesheets[self.state].update()
             if self.state == 'attack_left':
                 self.state = 'idle_left'
@@ -210,15 +214,16 @@ class Player(Creature):
                 self.state = 'idle_right'
 
         if self.state in ['secondary_left', 'secondary_right'] and \
-                self.spritesheets[self.state].get_frame() == self.spritesheets[self.state].get_len() - 1:
+                self.spritesheets[self.state].get_frame() == self.spritesheets[self.state].get_len():
             self.spritesheets[self.state].update()
+            self.secondary_attack()
             if self.state == 'secondary_left':
                 self.state = 'idle_left'
             if self.state == 'secondary_right':
                 self.state = 'idle_right'
 
         if self.state in ['dash_left', 'dash_right'] and \
-                self.spritesheets[self.state].get_frame() == self.spritesheets[self.state].get_len() - 1:
+                self.spritesheets[self.state].get_frame() == self.spritesheets[self.state].get_len():
             self.spritesheets[self.state].update()
             if self.state == 'dash_left':
                 self.state = 'run_left'
@@ -259,8 +264,7 @@ class Player(Creature):
 
     def secondary_attack(self):
         enemies = []
-        if self.state in ['run_right', 'idle_right']:
-            self.state = 'secondary_right'
+        if self.state == 'secondary_right':
             try:
                 for enemy in self.get_tile().get_enemies():
                     enemies.append(enemy)
@@ -285,8 +289,7 @@ class Player(Creature):
             except AttributeError:
                 pass
 
-        elif self.state in ['run_left', 'idle_left']:
-            self.state = 'secondary_left'
+        elif self.state == 'secondary_left':
             try:
                 for enemy in self.get_tile().get_enemies():
                     enemies.append(enemy)
@@ -329,7 +332,7 @@ class Player(Creature):
             enemy.hit(5)
 
     def get_healthbar(self):
-        self.health_bar = self.health_bar = pygame.Rect(10, 980, 400 * (self.current_health/self.max_health), 60)
+        self.health_bar = self.health_bar = pygame.Rect(10, 980, 400 * (self.current_health / self.max_health), 60)
         return self.health_bar
 
     def get_cooldowns(self):
@@ -392,10 +395,13 @@ class Enemy(Creature):
                     elif self.state == 'move_left':
                         self.state = 'attack_right'
 
-                    system.PLAYER.hit(5)
+        if self.spritesheets[self.state].get_frame() == self.spritesheets[self.state].get_len() \
+                and astar.manhattan(self.get_tile(), dest) < 75:
+            system.PLAYER.hit(5)
 
     def get_health_bar(self):
-        self.health_bar = pygame.Rect(self.hitbox.x, self.hitbox.y - 20, 50 * (self.current_health/self.max_health), 10)
+        self.health_bar = pygame.Rect(self.hitbox.x, self.hitbox.y - 20, 50 * (self.current_health / self.max_health),
+                                      10)
         self.under_bar = pygame.Rect(self.hitbox.x, self.hitbox.y - 20, 50, 10)
         return self.under_bar, self.health_bar
 
@@ -419,9 +425,9 @@ class Slime(Enemy):
             'move_left': Spritesheet(pygame.image.load(os.path.join(
                 'Sprites', 'Enemies', 'Slime', self.colour, 'Move.png')), 128, 128, 7, 1, 1, 'l'),
             'attack_right': Spritesheet(pygame.image.load(os.path.join(
-                'Sprites', 'Enemies', 'Slime', self.colour, 'Attack.png')), 128, 128, 4, 1, 1, 'r'),
+                'Sprites', 'Enemies', 'Slime', self.colour, 'Attack.png')), 128, 128, 4, 1, 3, 'r'),
             'attack_left': Spritesheet(pygame.image.load(os.path.join(
-                'Sprites', 'Enemies', 'Slime', self.colour, 'Attack.png')), 128, 128, 4, 1, 1, 'l'),
+                'Sprites', 'Enemies', 'Slime', self.colour, 'Attack.png')), 128, 128, 4, 1, 3, 'l'),
         }
 
         # Stats
