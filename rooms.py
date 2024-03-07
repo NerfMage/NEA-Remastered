@@ -236,7 +236,6 @@ class Room:
             if values[0] >= values[1]:
                 pygame.draw.circle(self.win, (0, 0, 255), (1600 - 90 * i, 990), 35)
 
-
     def draw_enemy_hitboxes(self):
         """
         Debugging method that draws all enemy hitboxes

@@ -202,7 +202,7 @@ class Player(Creature):
                     self.state = 'idle_left'
 
         if self.state in ['attack_left', 'attack_right'] and \
-                self.spritesheets[self.state].get_frame() == self.spritesheets[self.state].get_len():
+                self.spritesheets[self.state].get_frame() == self.spritesheets[self.state].get_len() - 1:
             self.spritesheets[self.state].update()
             if self.state == 'attack_left':
                 self.state = 'idle_left'
@@ -210,7 +210,7 @@ class Player(Creature):
                 self.state = 'idle_right'
 
         if self.state in ['secondary_left', 'secondary_right'] and \
-                self.spritesheets[self.state].get_frame() == self.spritesheets[self.state].get_len():
+                self.spritesheets[self.state].get_frame() == self.spritesheets[self.state].get_len() - 1:
             self.spritesheets[self.state].update()
             if self.state == 'secondary_left':
                 self.state = 'idle_left'
@@ -218,13 +218,13 @@ class Player(Creature):
                 self.state = 'idle_right'
 
         if self.state in ['dash_left', 'dash_right'] and \
-                self.spritesheets[self.state].get_frame() == self.spritesheets[self.state].get_len():
+                self.spritesheets[self.state].get_frame() == self.spritesheets[self.state].get_len() - 1:
             self.spritesheets[self.state].update()
             if self.state == 'dash_left':
                 self.state = 'run_left'
             if self.state == 'dash_right':
                 self.state = 'run_right'
-        else:
+        elif self.state in ['dash_left', 'dash_right']:
             self.dash()
 
         if isinstance(self.get_tile(), rooms.Trap):
