@@ -20,7 +20,6 @@ class System:
             os.path.join('Sprites', 'Environment', 'Floor.png')).convert_alpha(), [1680, 1050])
 
         self.current_room = Room(1)
-        self.current_room.generate()
 
     def run(self):
         """
@@ -39,6 +38,14 @@ class System:
             self.current_room.draw_creatures()
             # self.current_room.draw_grid()
             # self.current_room.draw_player_hitbox()
+            if self.current_room.check_win():
+                if PLAYER.get_tile() == self.current_room.get_door():
+                    self.win.fill((0, 0, 0))
+                    pygame.display.update()
+                    pygame.time.delay(750)
+                    self.current_room = self.current_room.next_room()
+                pass
+
             pygame.display.update()
 
             for event in pygame.event.get():

@@ -169,15 +169,34 @@ class Trap(Tile):
             self.sprite = self.spritesheet.get_image()
 
 
+class Door(Tile):
+    def __init__(self, x, y, row, column, room):
+        super().__init__(x, y, row, column, room)
+        self.spritesheet = creatures.Spritesheet(pygame.image.load(
+            os.path.join('Sprites', 'Environment', 'Door.png')), 70, 70, 2, 1.5, 1, 'r')
+        self.sprite = self.spritesheet.get_image()
+        self.opened = False
+
+    def open(self):
+        self.opened = True
+        self.spritesheet.update()
+        self.sprite = self.spritesheet.get_image()
+
+    def is_open(self):
+        return self.opened
+
+
 class Room:
     def __init__(self, difficulty):
         """
         A class to hold all the objects in one level
         :param difficulty: The difficulty scalar of all the enemies in the room
         """
+        self.door = None
         self.win = pygame.display.get_surface()
         self.difficulty = difficulty
         self.enemies = []
+        self.generate()
 
     def draw_grid(self):
         """
@@ -198,6 +217,9 @@ class Room:
         Based on noise mapping
         :return: None
         """
+        TILES.clear()
+        map.generate_map()
+        openList = []
         for x in range(24):
             column = []
             for y in range(15):
@@ -207,9 +229,15 @@ class Room:
                     else:
                         tile = Barrel(x * 70, y * 70, x, y, self)
                 else:
+                    if x == 23 or x == 0 or y == 0 or y == 14:
+                        openList.append([x, y])
                     tile = Tile(x * 70, y * 70, x, y, self)
                 column.append(tile)
             TILES.append(column)
+
+        doorCoord = random.choice(openList)
+        self.door = Door(doorCoord[0] * 70, doorCoord[1] * 70, doorCoord[0], doorCoord[1], self)
+        TILES[doorCoord[0]][doorCoord[1]] = self.door
 
         enemy_count = 0
         for coords in map.ENEMY_MAP:
@@ -289,3 +317,17 @@ class Room:
             if not enemy.is_dead():
                 temp.append(enemy)
         return temp
+
+    def check_win(self):
+        if any(not enemy.is_dead() for enemy in self.enemies):
+            return None
+        else:
+            if not self.door.is_open():
+                self.door.open()
+            return True
+
+    def next_room(self):
+        return Room(self.difficulty + 0.2)
+
+    def get_door(self):
+        return self.door

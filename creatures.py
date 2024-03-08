@@ -417,10 +417,13 @@ class Enemy(Creature):
         self.under_bar = pygame.Rect(self.hitbox.x, self.hitbox.y - 20, 50, 10)
         return self.under_bar, self.health_bar
 
-    def hit(self, damage:int):
+    def hit(self, damage: int):
         self.current_health -= damage
         if self.is_dead():
-            self.get_tile().add_loot(items.Gold(5, self.hitbox.x, self.hitbox.y))
+            drop = random.choice(list(self.droppable.keys()))
+            if drop == 'gold':
+                value = int(self.droppable[drop] * self.difficulty)
+                self.get_tile().add_loot(items.Gold(value, self.hitbox.x, self.hitbox.y))
 
 
 class Slime(Enemy):
@@ -431,7 +434,8 @@ class Slime(Enemy):
         :param y: Starting y coord
         :param difficulty: Starting difficulty
         """
-        super().__init__(difficulty, 5, 50, 20, pygame.Rect(x, y, 50, 30), [])
+        super().__init__(difficulty, 5, 50, 20, pygame.Rect(x, y, 50, 30),
+                         {'gold': 5})
 
         self.colour = random.choice(['Red', 'Green', 'Blue'])
 
@@ -448,7 +452,7 @@ class Slime(Enemy):
         }
 
         # Stats
-        self.damage = 10
+        self.damage = int(10 * difficulty)
 
         self.state = 'move_left'
         self.sprite = self.return_sprite()
