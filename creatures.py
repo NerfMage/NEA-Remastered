@@ -142,12 +142,16 @@ class Player(Creature):
             'dash_left': Spritesheet(pygame.image.load(os.path.join(
                 'Sprites', 'Player', 'Dash.png')), 128, 128, 4, 1.5, 2, 'l'),
         }
+        # A pygame rectangle representing the portion of health the player has left
         self.health_bar = pygame.Rect(10, 980, 400, 60)
-        self.gold = 0
+        # Dict containing the cooldowns for all player abilities as a 2d array [current count, reset count]
         self.cooldowns = {
             'secondary': [30, 30],
             'dash': [15, 15],
         }
+        # Player data imported from text file
+        self.data = open('data', 'r+')
+        self.gold = int(''.join(filter(str.isdigit, self.data.readlines()[0])))
 
     def get_coords(self) -> list:
         """
@@ -356,6 +360,11 @@ class Player(Creature):
             for tile in column:
                 if tile.get_hitbox().collidepoint(self.hitbox.center):
                     return tile
+
+    def save_data(self):
+        self.data.seek(0)
+        self.data.write('GOLD = {}'.format(self.gold))
+        self.data.close()
 
 
 class Enemy(Creature):

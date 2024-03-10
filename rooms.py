@@ -327,7 +327,7 @@ class Room:
             return True
 
     def next_room(self):
-        return Room(self.difficulty + 0.2)
+        return Room(self.difficulty + 0.5)
 
     def get_door(self):
         return self.door

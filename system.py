@@ -64,3 +64,5 @@ class System:
                     PLAYER.basic_attack()
 
             pygame.time.Clock.tick(self.clock, 20)
+
+        PLAYER.save_data()
