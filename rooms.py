@@ -10,7 +10,7 @@ import items
 pygame.font.init()
 
 TILES = []
-FONT = pygame.font.Font('freesansbold.ttf', 40)
+FONT = pygame.font.Font('ArcadeFont.ttf', 30)
 
 
 def get_surrounding(tile) -> list:
@@ -186,6 +186,44 @@ class Door(Tile):
         return self.opened
 
 
+def draw_grid():
+    """
+    Method to help with debugging
+    Draws a grid that outlines all tiles on the map
+    :return: None
+    """
+    for column in TILES:
+        for tile in column:
+            if tile.return_occupied():
+                pygame.draw.rect(system.WIN, (255, 0, 0), tile.get_hitbox())
+            else:
+                pygame.draw.rect(system.WIN, (255, 0, 0), tile.get_hitbox(), 1)
+
+
+def draw_obstacles():
+    """
+    Method that draws all obstacle sprites to their respective locations
+    :return: None
+    """
+    for column in TILES:
+        for tile in column:
+            if tile.return_sprite() is not None:
+                system.WIN.blit(tile.return_sprite(), tile.get_coords())
+
+            for item in tile.get_loot():
+                if isinstance(item, items.Gold):
+                    pygame.draw.circle(system.WIN, (255, 215, 0),
+                                       (item.get_coords()[0], item.get_coords()[1]), 10)
+
+
+def draw_player_hitbox():
+    """
+    Debugging method that draws player hitbox
+    :return: None
+    """
+    pygame.draw.rect(system.WIN, (0, 0, 255), system.PLAYER.get_tile().get_hitbox())
+
+
 class Room:
     def __init__(self, difficulty):
         """
@@ -193,23 +231,9 @@ class Room:
         :param difficulty: The difficulty scalar of all the enemies in the room
         """
         self.door = None
-        self.win = pygame.display.get_surface()
         self.difficulty = difficulty
         self.enemies = []
         self.generate()
-
-    def draw_grid(self):
-        """
-        Method to help with debugging
-        Draws a grid that outlines all tiles on the map
-        :return: None
-        """
-        for column in TILES:
-            for tile in column:
-                if tile.return_occupied():
-                    pygame.draw.rect(self.win, (255, 0, 0), tile.get_hitbox())
-                else:
-                    pygame.draw.rect(self.win, (255, 0, 0), tile.get_hitbox(), 1)
 
     def generate(self):
         """
@@ -247,52 +271,37 @@ class Room:
             if enemy_count == 12:
                 break
 
-    def draw_obstacles(self):
-        """
-        Method that draws all obstacle sprites to their respective locations
-        :return: None
-        """
-        for column in TILES:
-            for tile in column:
-                if tile.return_sprite() is not None:
-                    self.win.blit(tile.return_sprite(), tile.get_coords())
-
-                for item in tile.get_loot():
-                    if isinstance(item, items.Gold):
-                        pygame.draw.circle(self.win, (255, 215, 0),
-                                           (item.get_coords()[0], item.get_coords()[1]), 10)
-
     def draw_creatures(self):
         """
         Method that draws all creatures in the level to their respective locations
         :return: None
         """
 
-        self.win.blit(system.PLAYER.return_sprite(), system.PLAYER.get_coords())
+        system.WIN.blit(system.PLAYER.return_sprite(), system.PLAYER.get_coords())
 
         for enemy in self.enemies:
             if not enemy.is_dead():
                 enemy.move(system.PLAYER.get_tile())
                 sprite = enemy.return_sprite()
                 coords = enemy.get_coords()
-                self.win.blit(sprite, coords)
-                pygame.draw.rect(self.win, (255, 0, 0), enemy.get_health_bar()[0])
-                pygame.draw.rect(self.win, (0, 255, 0), enemy.get_health_bar()[1])
+                system.WIN.blit(sprite, coords)
+                pygame.draw.rect(system.WIN, (255, 0, 0), enemy.get_health_bar()[0])
+                pygame.draw.rect(system.WIN, (0, 255, 0), enemy.get_health_bar()[1])
 
         # Draws the Healthbar
-        pygame.draw.rect(self.win, (255, 255, 255), (7, 977,  406, 66))
-        pygame.draw.rect(self.win, (255, 0, 0), (10, 980, 400, 60))
-        pygame.draw.rect(self.win, (0, 255, 0), system.PLAYER.get_healthbar())
+        pygame.draw.rect(system.WIN, (255, 255, 255), (7, 977,  406, 66))
+        pygame.draw.rect(system.WIN, (255, 0, 0), (10, 980, 400, 60))
+        pygame.draw.rect(system.WIN, (0, 255, 0), system.PLAYER.get_healthbar())
         # Draws cooldown boxes
         for i, values in enumerate(system.PLAYER.get_cooldowns().values()):
-            pygame.draw.circle(self.win, (255, 255, 255), (1600 - 90*i, 990), 40)
+            pygame.draw.circle(system.WIN, (255, 255, 255), (1600 - 90*i, 990), 40)
             if values[0] >= values[1]:
-                pygame.draw.circle(self.win, (0, 0, 255), (1600 - 90 * i, 990), 35)
+                pygame.draw.circle(system.WIN, (0, 0, 255), (1600 - 90 * i, 990), 35)
 
         # Draws gold count
         gold_text = FONT.render(str(system.PLAYER.get_gold()), True, (255, 215, 0))
-        pygame.draw.circle(self.win, (255, 215, 0), (1550, 50), 20)
-        self.win.blit(gold_text, (1600, 33))
+        pygame.draw.circle(system.WIN, (255, 215, 0), (1550, 50), 20)
+        system.WIN.blit(gold_text, (1580, 38))
 
     def draw_enemy_hitboxes(self):
         """
@@ -300,16 +309,9 @@ class Room:
         :return: None
         """
         for enemy in self.enemies:
-            pygame.draw.rect(self.win, (0, 255, 0), enemy.get_hitbox())
+            pygame.draw.rect(system.WIN, (0, 255, 0), enemy.get_hitbox())
             for tile in astar.astar(enemy.get_tile(), system.PLAYER.get_tile()):
-                pygame.draw.rect(self.win, (50, 50, 50), tile.get_hitbox())
-
-    def draw_player_hitbox(self):
-        """
-        Debugging method that draws player hitbox
-        :return: None
-        """
-        pygame.draw.rect(self.win, (0, 0, 255), system.PLAYER.get_tile().get_hitbox())
+                pygame.draw.rect(system.WIN, (50, 50, 50), tile.get_hitbox())
 
     def get_enemies(self):
         temp = []
@@ -327,6 +329,7 @@ class Room:
             return True
 
     def next_room(self):
+        system.PLAYER.heal(int(50 * self.difficulty))
         return Room(self.difficulty + 0.5)
 
     def get_door(self):

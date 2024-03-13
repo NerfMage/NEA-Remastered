@@ -115,6 +115,11 @@ class Creature:
         else:
             return False
 
+    def heal(self, value: int):
+        self.current_health += value
+        if self.current_health > self.max_health:
+            self.current_health = self.max_health
+
 
 class Player(Creature):
     def __init__(self, x, y):
