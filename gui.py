@@ -61,7 +61,7 @@ def main_menu():
 
 def death_menu():
     mouse_pos = pygame.mouse.get_pos()
-    menu_text = FONT.render('You Died', True, (255, 255, 255))
+    menu_text = FONT.render('You Died', True, (255, 0, 0))
 
     back_text = FONT.render('Back to Main Menu', True, (14, 229, 236))
     back_button = back_text.get_rect(x=525, y=500)
